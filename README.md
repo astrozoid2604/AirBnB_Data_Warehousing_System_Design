@@ -1,20 +1,21 @@
 # 1. Introduction
-
+Throughout the course of this project, I gained valuable insights on database management system and retrieval languages. In this opportunity, our group embarks on journey to implement a project to design database based on AirBnB dataset provided.
 
 ---
 
 ## 1.1. Project Objective
-
+The objective of this project is to understand the basic process of data management and retrieval in real applications and organizations, which generally covers the following tasks and procedures: collecting, processing, storing and accessing data.
 
 ---
 
 ## 1.2. Project Background
+For the purpose of this project, an industrial dataset was gathered from AirBnB platform which is one of famous lodging online platform. The dataset is obtained from website [http://insideairbnb.com/get-the-data/](http://insideairbnb.com/get-the-data/) for Bangkok, Central Thailand, Thailand. 
 
+From this dataset, few processes are involved such as knowing the inherent properties of the data, cleaning the dataset, generating derivative relations, storing data in both relational and non-relational database systems, and retrieving data so as to answer few samples of user queries.
 
 --- 
 
 # 2. Data Analysis
-
 
 ---
 
