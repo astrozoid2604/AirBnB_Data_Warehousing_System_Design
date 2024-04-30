@@ -1,0 +1,158 @@
+
+#Q1 NL Query: Most popular host 
+#Execution time:103ms
+db.host.find().sort({host_total_listings_count:-1}).limit(1)
+
+
+#Q2 NL Query: Most popular room (i.e. listings)
+#Execution time: 18ms
+db.listings.aggregate([{$sort: {number_of_reviews: -1}}, {$project: {id:1,_id:0, name:1, host_id:1,property_type:1,room_type:1,number_of_reviews:1,number_of_reviews_ltm:1,}}, {$limit: 1}])
+
+
+#Q3  NL Query: Longest room renting
+#Execution time: 24ms
+db.listings.aggregate([{$sort: { maximum_nights: -1}}, {$project: {_id:0, id:1, name:1,maximum_nights:1}}, {$limit: 1}])
+
+
+#Q4: NL Query: Visitor's name giving most reviews
+#Execution time: 700ms
+db.reviews.aggregate( [{$group: {_id: "$reviewer_id",myCount: {$sum: 1}}}, {$sort: {"myCount": -1}}, {$limit: 1}])
+db.reviewer.find({reviewer_id:43924136})
+
+
+#Q5: NL Query: Most expensive lodging
+#Execution time: 16ms
+db.listings.aggregate([{$sort: {price: -1}}, {$project: {id : 1,_id: 0,name : 1,description : 1,property_type : 1,room_type : 1,price:1}}, {$limit: 1}])
+
+
+#Q6: NL Query: Best recommended lodgings for a family of 4 (referring to review score)
+# Execution time: 99ms
+db.listings.aggregate([{$match: {accommodates:{$gte:4}}}, {$sort: review_scores_value: -1,review_scores_rating:-1,review_scores_accuracy:-1,  review_scores_checkin:-1,review_scores_cleanliness:-1,review_scores_communication:-1,review_scores_location:-1,number_of_reviews:-1 }}, {$project: { _id:0, id:1, name:1, accommodates:1,review_scores_value:1,review_scores_accuracy:1,review_scores_checkin:1,review_scores_cleanliness:1,review_scores_communication:1,review_scores_location:1,review_scores_rating:1,number_of_reviews:1}}, {$limit: 1}])
+
+
+#Q7: NL Query: Top 10 most expensive lodgings which are equipped with Gym
+# Execution time: 78ms
+db.listings.aggregate([{$match: {amenities : {$regex : ".*Gym*."}}}, {$sort: {price: -1}}, {$project: {_id:0,id :1,name:1,description:1,property_type:1,room_type:1,amenities:1,price:1}}, {$limit: 1}])
+
+
+#Q8: NL Query: Top 10 worst lodgings to be avoided by tourists
+# Execution time: 34ms
+db.listings.aggregate([{$project: {_id:0,id:1,name:1,accommodates:1,review_scores_value:1,review_scores_accuracy:1,review_scores_checkin:1,review_scores_cleanliness:1,review_scores_communication:1,review_scores_location:1,review_scores_rating:1,number_of_reviews:1}}, {$match: {number_of_reviews:{$gte:10},}}, {$sort: {review_scores_value: 1,review_scores_rating:1,review_scores_accuracy:1,review_scores_checkin:1,review_scores_cleanliness:1,review_scores_communication:1,review_scores_location:1}}, {$limit: 10}])
+
+
+#Q9: NL Query: Number of verified hotel near Bangkok neighbourhood
+# Execution time: 12ms
+db.location.aggregate([{$match: {neighbourhood_cleansed : {$regex : ".*Bangkok*."}}}, {$count: 'count'}])
+
+
+#Q10: NL Query: Lodging with highest total capacity in Bangkok
+# Execution time: 4338ms
+db.location.aggregate([{$match: {neighbourhood_cleansed : {$regex : ".*Bangkok*."} }}, {$merge: { into: 'Bangkok1' }}])
+db.listings.aggregate( [{$lookup: { from: 'Bangkok', localField: 'latitude', foreignField: 'latitude', as: 'Bangkok' }}, {$project: { _id:0, name:1, accommodates:1, Bangkok:1 }}, {$match: { "Bangkok": { $ne: [] } }}, {$sort: { accommodates: -1 }}])
+
+
+#Q11: NL Query: Most popular lodging locations
+# Execution Time: 506755 ms 
+db.listings.aggregate([{$project: {id: 1, name: 1, host_id: 1, review_scores_value: 1}}, {$lookup: {from: 'host', localField: 'host_id', foreignField: 'host_id',pipeline: [{$project: { host_location: 1}}],as: 'host_location'}}, {$project: { review_scores_value: { $toDecimal: '$review_scores_value'},host_location: '$host_location.host_location'}}, { $unwind: '$host_location'}, {$sort: {host_location: 1}}, {$group: { _id: '$host_location',count_num: { $count: {}},total_score: { $sum: '$review_scores_value'}}}, {$project: { location: '$_id', avg_score: { $divide: ['$total_score','$count_num']}}}, {$sort: { avg_score: -1}}, {$limit: 10 }])
+
+
+#Q12: NL Query: Host with highest monthly revenue 
+#
+db.calendar.aggregate([{$project: {latitude: 1,longitude: 1,neighbourhood: '$neighbourhood_cleansed'}}, {$lookup: {from: 'listings','let': latitude_n: '$latitude',longitude_n: '$longitude'},pipeline: [{$match: {$expr: {$and: [{$eq: ['$latitude','$$latitude_n']},{$eq: ['$longitude','$$longitude_n']}]}} },{$project: {id: 1}}],as: 'listing_id'}}, { $project: { neighbourhood: 1,listing_id: '$listing_id.id'}}, {$unwind: '$listing_id'}, {$group: { _id: '$neighborhood',count_h: {$sum: 1}}}, {$sort: {count_h: -1}}, {$limit: 1}])
+db.host.aggregate([$match: {host_id: “23095883”}]) 
+
+#Q13: NL Query: Top 10 lodgings with most amenities listed.
+
+db.listings.aggregate([{
+ $project: { id: 1,name: 1,
+  amentities: { $size: {
+    $split: ['$amenities',',']}}}
+}, {$sort: { amentities: -1}
+}, {$limit: 10}])
+
+#Q14: NL Query:  Most popular lodging locations
+#Execution time: 354 ms  
+db.calendar.aggregate([{$project: { listing_id: 1,month_n: { $month:{ $toDate: '$checkin_date'} }}}, { $sort: { month_n: 1}}, { $group: { _id: '$month_n',count_m: { $count: {}}}}, { $project: { count_m: 1,quarter: { $cond: [{$lte: ['$_id',3]},'first',{$cond: [{$lte: ['$_id',6]},'second',{$cond: [{$lte: ['$_id',9]},'third','fourth']} ]}]}}}, {$group: {_id: '$quarter',count_q: {$sum: '$count_m'}}}, {$sort: {count_q: -1}}])
+
+
+#Q15: NL Query: Top 10 lodging with amenities listed
+#Execution time: 166 ms 
+db.listings.aggregate([{$project: { id: 1,name: 1,amentities: { $size: {$split: ['$amenities',',']}}}}, {$sort: { amentities: -1}}, {$limit: 10}])
+
+
+#Q16: NL Query: Oldest listed condominium that has Gym and Pool facilities 
+#Execution time: 52436 ms 
+db.listings.aggregate([{$project: { id: 1, name: 1,property_type: 1,host_id: 1, amenities: 1}}, { $match: { $and: [{amenities: {$regex: RegExp(".*gym"),$options: 'si'}},{property_type: {$regex: RegExp(".*condo"),$options: 'si'}}]}}, {$lookup: {from: 'host',localField: 'host_id',foreignField: 'host_id',pipeline: [{$project: {host_since: 1}}],as: 'host_info'}}, { $unwind: '$host_info'}, {$project: { listing_id: '$id', name: 1,property_type: 1,amenities: 1,host_since: {$toDate: '$host_info.host_since'}}}, {$sort: {host_since: 1}}, {$limit: 1}]
+
+
+#Q17: NL Query: Top 10 lodgings with highest average price increase during Christmas and New Year
+# Execution time: 103805 ms 
+db.transaction.aggregate([{$project: {listing_id: 1,month: {$month: '$date'},day: {$dayOfMonth: '$date'},adjusted_price: 1,price: 1}}, {$match: { $or: [{$and: [{month: 12},{day: 24}]},{$and: [{month: 12},{day: 25}]},{$and: [{month: 1},{day: 1}]}]}}, {$project: {listing_id: 1,month: 1,price: {$toDecimal: '$price'},adjusted_price: {$toDecimal: '$adjusted_price'}}}, {$group: {_id: {listing_id: '$listing_id', month_n: '$month'},sum_price: {$sum: '$price'},sum_adjusted_price: {$sum: '$adjusted_price'}}}, {$project: {listing_id: '$_id.listing_id',month: '$_id.month',price_rate: {$cond: {'if': {$lte: ['$sum_price',0]},then: 0,'else': { $divide: [{$subtract: ['$sum_adjusted_price','$sum_price']},'$sum_price']}}}}}, {$sort: {price_rate: -1}}, {$limit: 10}])
+
+
+#Q18: NL Query: Most popular lodging during Halloween 
+#Execution time: 3057 ms 
+db.transaction.aggregate([{$project: { listing_id: 1, checkin_date: 1}}, {$match: {$or: [{checkin_date: {$eq: '2022-10-31'}},{checkin_date: {$eq: '2022-10-31'}}]}}, {$lookup: {from: 'listings',localField: 'listing_id',foreignField: 'id',pipeline: [{$project: {name: 1, longitude: 1,latitude: 1}}],as: 'list_info'}}, {$unwind: '$list_info'}, {$project: {listing_id: 1,name: '$list_info.name',latitude: '$list_info.latitude',longitude: '$list_info.longitude'}}, {$lookup: {from: 'location', 'let': {latitude_n: '$latitude',longitude_n: '$longitude'},  pipeline: [{$match: {$expr: {$and: [{$eq: ['$latitude','$$latitude_n']},{$eq: ['$longitude','$$longitude_n']}]}}},{$project: {neighbourhood_cleansed: 1}}],as: 'loc_name'}}, {$unwind: '$loc_name'}, {$project: {listing_id: 1,name: 1,neighbourhood: '$loc_name.neighbourhood_cleansed'}}, {$group: {_id: '$neighbourhood',count_h: {$count: {}}}}, {$sort: {count_h: -1}}, {$limit: 1}])
+
+# Q19: NL Query: Lodging with highest total capacity in Bangkok
+
+db.listings.aggregate(	
+[{$match: {
+  neighbourhood_cleansed : {$regex : ".*Bangkok*."}
+}}, {$merge: {
+  into: 'Bangkok',
+}}, {}])
+db.listings.aggregate(
+[{$lookup: {
+  from: 'Bangkok',
+  localField: 'latitude',
+  foreignField: 'latitude',
+  as: 'Bangkok'
+}}, {$project: {
+    _id:0,
+  name:1,
+  accommodates:1,
+  Bangkok:1
+}}, {$match: {
+  "Bangkok": { $ne: [] }
+}}, {$sort: {
+  accommodates: -1
+}}])
+
+#Q20: Most popular lodging during Halloween festivity
+
+db.transaction.aggregate([{
+ $project: { listing_id: 1, checkin_date: 1}
+}, {$match: {
+  $or: [{checkin_date: {$eq: '2022-10-31'}},
+   {checkin_date: {$eq: '2022-10-31'}}]}
+}, {
+ $lookup: {
+  from: 'listings',
+  localField: 'listing_id',
+  foreignField: 'id',
+  pipeline: [
+   {$project: {name: 1,
+     longitude: 1,latitude: 1}}],
+  as: 'list_info'}
+}, {$unwind: '$list_info'}, {
+ $project: {listing_id: 1,name: '$list_info.name',
+  latitude: '$list_info.latitude',longitude: '$list_info.longitude'}
+}, {
+ $lookup: {
+  from: 'location',
+  'let': {latitude_n: '$latitude',longitude_n: '$longitude'},
+  pipeline: [
+   {$match: {$expr: {
+      $and: [{$eq: ['$latitude','$$latitude_n']},
+       {$eq: ['$longitude','$$longitude_n']}]}}},
+   {$project: {neighbourhood_cleansed: 1}}],
+  as: 'loc_name'}
+}, {$unwind: '$loc_name'}, {
+ $project: {listing_id: 1,name: 1,
+  neighbourhood: '$loc_name.neighbourhood_cleansed'}
+}, {
+ $group: {_id: '$neighbourhood',count_h: {$count: {}}}
+}, {$sort: {count_h: -1}
+}, {$limit: 1}])
+Execution time: 3057ms

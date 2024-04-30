@@ -1,0 +1,462 @@
+USE airbnb;
+
+SHOW TABLES;
+
+CREATE TABLE reviews(
+	listing_id  BIGINT NOT NULL,
+    id          BIGINT NOT NULL,
+    date        DATE,
+    reviewer_id BIGINT NOT NULL,
+    comments    TEXT,
+    PRIMARY KEY(id),
+    FOREIGN KEY(listing_id) REFERENCES calendar(listing_id),
+    FOREIGN KEY(reviewer_id) REFERENCES reviewer(reviewer_id)
+);
+DROP TABLE reviews;
+DESCRIBE reviews;
+SELECT count(*) from reviews;
+SELECT * from reviews;
+
+CREATE TABLE transaction(
+	listing_id       BIGINT NOT NULL,
+    checkin_date     DATE,
+    occupancy_period INT,
+    PRIMARY KEY(listing_id,checkin_date),
+    FOREIGN KEY(listing_id,checkin_date) REFERENCES calendar(listing_id,date)
+);
+DROP TABLE transaction;
+DESCRIBE transaction;
+SELECT count(*) from transaction;
+SELECT * from transaction;
+
+CREATE TABLE reviewer(
+	reviewer_id   BIGINT NOT NULL,
+    reviewer_name VARCHAR(50),
+    PRIMARY KEY(reviewer_id)
+);
+DROP TABLE reviewer;
+DESCRIBE reviewer;
+SELECT count(*) from reviewer;
+SELECT * from reviewer;
+
+CREATE TABLE calendar(
+	listing_id     BIGINT NOT NULL,
+    date           DATE NOT NULL,
+    available      CHAR(1),
+    price          FLOAT(10),
+    adjusted_price FLOAT(10),
+    minimum_nights FLOAT(10),
+    maximum_nights FLOAT(10), 
+    PRIMARY KEY (listing_id, date),
+    FOREIGN KEY(listing_id) REFERENCES listing(id)
+);
+DROP TABLE calendar;
+DESCRIBE calendar;
+SELECT count(*) from calendar;
+SELECT * from calendar;
+
+CREATE TABLE scrape(
+	id           BIGINT NOT NULL,
+    scrape_id    BIGINT,
+    last_scraped DATE,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id) REFERENCES listing(id)
+);
+DROP TABLE scrape;
+DESCRIBE scrape;
+SELECT count(*) from scrape;
+SELECT * from scrape;
+
+CREATE TABLE listing(
+	id                                           BIGINT NOT NULL,
+    listing_url                                  VARCHAR(2083),
+    name                                         VARCHAR(500),
+    description                                  TEXT,
+    picture_url                                  VARCHAR(2083),
+    host_id                                      BIGINT NOT NULL,
+	host_listings_count                          INT,
+    latitude                                     FLOAT(20) NOT NULL,
+    longitude                                    FLOAT(20) NOT NULL,
+    property_type                                VARCHAR(50),
+    room_type                                    VARCHAR(50),
+    accommodates                                 INT,
+    bathrooms                                    FLOAT(5),
+    bathrooms_text                               VARCHAR(20),
+    bedrooms                                     INT,
+    beds                                         INT,
+    amenities                                    TEXT,
+    price                                        INT,
+    minimum_nights                               INT,
+    maximum_nights                               INT,
+    minimum_minimum_nights                       INT,
+    maximum_minimum_nights                       INT,
+    minimum_maximum_nights                       INT,
+    maximum_maximum_nights                       INT,
+    minimum_nights_avg_ntm                       INT,
+    maximum_nights_avg_ntm                       INT,
+    calendar_updated                             VARCHAR(20),
+    has_availability                             CHAR(1),
+    availability_30                              INT,
+    availability_60                              INT,
+    availability_90                              INT,
+    availability_365                             INT,
+    calendar_last_scraped                        DATE,
+    number_of_reviews                            INT,
+    number_of_reviews_ltm                        INT,
+    number_of_reviews_l30d                       INT,
+    first_review                                 DATE,
+    last_review                                  DATE,
+    review_scores_rating                         FLOAT(5),
+    review_scores_accuracy                       FLOAT(5),
+    review_scores_cleanliness                    FLOAT(5),
+    review_scores_checkin                        FLOAT(5),
+    review_scores_communication                  FLOAT(5),
+    review_scores_location                       FLOAT(5),
+    review_scores_value                          FLOAT(5),
+    license                                      VARCHAR(50),
+    instant_bookable                             CHAR(1),
+    calculated_host_listings_count               INT,
+    calculated_host_listings_count_entire_homes  INT,
+    calculated_host_listings_count_private_rooms INT,
+    calculated_host_listings_count_shared_rooms  INT,
+    reviews_per_month                            FLOAT(5),
+    PRIMARY KEY(id),
+    FOREIGN KEY(host_id) REFERENCES host(host_id),
+    FOREIGN KEY(latitude, longitude) REFERENCES location(latitude, longitude)
+);
+DROP TABLE listing;
+DESCRIBE listing;
+SELECT count(*) from listing;
+SELECT * from listing;
+
+CREATE TABLE location(
+	latitude                     FLOAT(20) NOT NULL,
+    longitude                    FLOAT(20) NOT NULL,
+    neighborhood_overview        TEXT,
+    neighbourhood                LONGTEXT,
+    neighbourhood_cleansed       LONGTEXT,
+    neighbourhood_group_cleansed LONGTEXT,
+    PRIMARY KEY(latitude, longitude)
+);
+DROP TABLE location;
+DESCRIBE location;
+SELECT count(*) from location;
+SELECT * from location;
+
+CREATE TABLE host(
+	host_id                   BIGINT NOT NULL,
+    host_url                  VARCHAR(2083),
+    host_picture_url          VARCHAR(2083) NOT NULL,
+    host_name                 VARCHAR(100),
+    host_since                DATE,
+    host_location             VARCHAR(200),
+    host_about                TEXT,
+    host_response_time        INT,
+    host_response_rate        INT,
+    host_acceptance_rate      INT,
+    host_is_superhost         CHAR(1),
+    host_neighbourhood        VARCHAR(200),
+    host_total_listings_count INT,
+    host_verifications        VARCHAR(100),
+    host_identity_verified    CHAR(1),
+    PRIMARY KEY(host_id),
+    FOREIGN KEY(host_picture_url) REFERENCES host_pic(host_picture_url)
+) DEFAULT CHARSET=latin1;
+DROP TABLE host;
+DESCRIBE host;
+SELECT count(*) from host;
+SELECT * from host;
+
+CREATE TABLE host_pic(
+	host_picture_url      VARCHAR(2083) NOT NULL,
+    host_thumbnail_url    VARCHAR(2083),
+    host_has_profile_pic  CHAR(1),
+    PRIMARY KEY (host_picture_url) 
+) DEFAULT CHARSET=latin1;
+DROP TABLE host_pic;
+DESCRIBE host_pic;
+SELECT count(*) from host_pic;
+SELECT * from host_pic;
+
+
+
+
+
+
+
+
+
+
+
+####01. Top 10 most popular host
+SELECT L.host_id,H.host_name,L.review_scores_value 
+FROM host H
+     INNER JOIN listing L ON H.host_id=L.host_id
+ORDER BY L.review_scores_value DESC LIMIT 10;
+
+
+###02. Top 10 most popular room (i.e. listings)
+WITH SQ1 as (SELECT L.room_type, SUM(L.review_scores_value) as total_review_scores_value, COUNT(L.room_type) as room_type_count
+             FROM listing L
+             GROUP BY L.room_type)
+SELECT SQ1.room_type, SQ1.total_review_scores_value/SQ1.room_type_count as weighted_average_review_scores_value
+FROM SQ1
+ORDER BY weighted_average_review_scores_value DESC;
+
+
+###03. Top 10 Most popular lodging locations
+WITH SQ1 as (SELECT H.host_location, SUM(L.review_scores_value) as total_review_scores_value, COUNT(H.host_location) as location_count
+             FROM listing L
+                  INNER JOIN host H on L.host_id=H.host_id
+             GROUP BY H.host_location)
+SELECT SQ1.host_location, SQ1.total_review_scores_value/SQ1.location_count as weighted_average_review_scores_value
+FROM SQ1
+ORDER BY weighted_average_review_scores_value DESC LIMIT 10;
+
+
+###04. Which lodging is occupied the longest
+SELECT L.id as listing_id,L.name,max(T.occupancy_period) as max_occupancy_period
+FROM calendar C 
+     INNER JOIN listing L on C.listing_id=L.id
+     INNER JOIN transaction T on C.listing_id=T.listing_id
+GROUP BY L.id
+ORDER BY max_occupancy_period DESC LIMIT 1;
+
+
+### 05. Host with highest monthly revenue 
+### Duration/Fetch Time: 5.772 sec / 0.000036 sec
+SELECT host.host_id, host.host_url, host.host_name, month, year, SUM(revenue) as revenue
+FROM
+
+(SELECT transaction.listing_id, YEAR(calendar.date) as year, MONTH(calendar.date) as month, SUM(calendar.adjusted_price) as revenue
+FROM 
+(SELECT listing_id, checkin_date, DATE_ADD(checkin_date, INTERVAL occupancy_period DAY) AS checkout_date
+FROM transaction) transaction
+INNER JOIN
+(SELECT listing_id, date, adjusted_price
+FROM calendar) calendar
+ON transaction.listing_id = calendar.listing_id AND (calendar.date >= transaction.checkin_date OR calendar.date < checkout_date)
+GROUP BY transaction.listing_id, year, month) rev_id_year_month
+
+INNER JOIN 
+(SELECT id, host_id FROM listing) listing
+ON rev_id_year_month.listing_id = listing.id
+INNER JOIN
+(SELECT host_id, host_url, host_name FROM host) host
+ON listing.host_id = host.host_id
+GROUP BY host.host_id, host.host_url, host.host_name, month, year
+ORDER BY revenue DESC
+LIMIT 1;
+
+
+###06. Visitor's name giving most reviews
+SELECT COUNT(r1.reviewer_name) as name_count, r2.reviewer_id, r1.reviewer_name
+FROM reviewer r1 
+	 INNER JOIN reviews r2 ON r1.reviewer_id=r2.reviewer_id
+GROUP BY r2.reviewer_id
+ORDER BY name_count DESC LIMIT 1;
+
+
+### 7. Neighbourhood with most crowded lodgings
+### Duration/Fetch Time: 0.075 sec / 0.0000088 sec
+SELECT neighbourhood, count(id) as count
+FROM (SELECT id, latitude, longitude FROM listing) listing
+INNER JOIN
+(SELECT latitude, longitude, neighbourhood_cleansed as neighbourhood FROM location) location
+ON listing.latitude = location.latitude AND listing.longitude = location.longitude
+GROUP BY neighbourhood
+ORDER BY count DESC
+LIMIT 1;
+
+
+###08. Top 10 most expensive seasonal lodging
+SELECT C.listing_id, L.name, C.date, max(C.adjusted_price) as max_adjusted_price
+FROM calendar C
+     INNER JOIN listing L ON C.listing_id=L.id
+GROUP BY C.listing_id, C.date
+ORDER BY C.date, max_adjusted_price DESC LIMIT 10;
+
+
+### 9.Most popular season in Bangkok
+### Duration/Fetch Time: 0.024 sec / 0.000011 sec
+SELECT 
+CASE WHEN month >= 1 AND month <= 3 THEN 'Winter'
+     WHEN month >= 4 AND month <= 6 THEN 'Spring'
+     WHEN month >= 7 AND month <= 9 THEN 'Summer'
+     ELSE 'Autumn'
+END as season,
+sum(count) as number_of_trans
+FROM
+(SELECT count(listing_id) as count, MONTH(checkin_date) as month
+FROM transaction
+GROUP BY month) count_month
+GROUP BY season
+ORDER BY number_of_trans DESC
+LIMIT 1;
+
+
+###10. Top 10 most recommended lodgings for a family of 4 (referring to review score)
+SELECT L.id, L.name, L.accommodates, L.review_scores_value
+FROM listing L
+WHERE L.accommodates>=4 and L.review_scores_value=5
+ORDER BY L.review_scores_value DESC LIMIT 10;
+
+
+###11. Lodgings with most frequent price adjustment
+SELECT C.listing_id, L.name, COUNT(DISTINCT C.adjusted_price) as adjusted_price_count
+FROM calendar C
+     INNER JOIN listing L ON C.listing_id=L.id
+GROUP BY C.listing_id
+ORDER BY adjusted_price_count DESC LIMIT 1;
+
+
+### 12. Top 10 most responsive lodgings which are equipped with Gym
+### Duration/Fetch Time: 0.099 sec / 0.000013 sec
+SELECT id, listing_url, name, description, amenities
+FROM
+(SELECT * from listing where amenities LIKE '%Gym%') listing
+INNER JOIN
+(SELECT host_id, host_response_rate from host) host
+ON listing.host_id = host.host_id
+ORDER BY host_response_rate DESC
+LIMIT 10;
+
+###13. Top 10 lodgings with most amenities listed.
+#select ColumnName, LEN(ColumnName)- LEN(REPLACE(ColumnName, 'N', ''))
+SELECT L.id,L.name,(LENGTH(L.amenities)-LENGTH(REPLACE(L.amenities, ',', ''))+1) as amenities_count
+FROM listing L
+ORDER BY amenities_count DESC LIMIT 10;
+
+
+###14. Top 10 oldest listed condominium that has Gym and Pool facilities
+SELECT L.id, L.name, L.property_type, H.host_since
+FROM listing L 
+     INNER JOIN host H ON L.host_id=H.host_id 
+WHERE L.property_type LIKE '%condo%' AND L.amenities LIKE '%gym%' 
+      AND EXISTS(SELECT L1.amenities
+				 FROM listing L1 
+                      INNER JOIN host H1 ON L1.host_id=H1.host_id
+                 WHERE L1.amenities LIKE '%pool%')
+ORDER BY H.host_since ASC LIMIT 10;
+
+
+### 15. Top 10 lodgings with highest average price increase during Christmas and New Year
+### Duration/Fetch Time: 1.905 sec / 0.0010 sec
+SELECT listing_id, holiday, price, adjusted_price, CONCAT(CONVERT(price_change*100,char), '%') as price_increase,
+listing_url, name, description, property_type, room_type, accommodates
+FROM
+(SELECT listing_id, 
+CASE WHEN date = date = '2022-12-24' OR date = '2022-12-25' THEN 'Christmas'
+     ELSE 'New Year'
+END as holiday, sum(price) as price, sum(adjusted_price) as adjusted_price,
+(sum(adjusted_price) - sum(price))/sum(price) as price_change
+FROM calendar
+WHERE date = '2022-12-24' OR date = '2022-12-25' OR date = '2022-12-31' OR date = '2023-01-01'
+GROUP BY listing_id, holiday
+ORDER BY price_change DESC
+LIMIT 10) calendar
+INNER JOIN
+(SELECT id, listing_url, name, description, property_type, room_type, accommodates
+FROM listing) listing
+ON calendar.listing_id = listing.id;
+
+
+### 16.1 Most booked lodgings in year 2022 (in terms of occupancy_period) 
+### Duration/Fetch Time: 0.033 sec / 0.0014 sec
+WITH occupancy_length(listing_id, length) as
+	(SELECT listing_id, sum(occupancy_period) as length
+	FROM transaction 
+	WHERE YEAR(checkin_date) = 2022
+	GROUP BY listing_id),
+    
+	max_occupancy(length) as
+	(SELECT max(length)
+	FROM occupancy_length)
+
+SELECT length as occupied_length, listing_id, listing_url, name, description, property_type, room_type, accommodates, review_scores_rating
+FROM 
+(SELECT listing_id, occupancy_length.length
+FROM occupancy_length, max_occupancy
+WHERE occupancy_length.length = max_occupancy.length) most_occupied
+INNER JOIN listing
+ON most_occupied.listing_id = listing.id;
+
+### 16.2 Most booked lodgings in year 2022 (in terms of number of bookings) 
+### Duration/Fetch Time: 0.028 sec / 0.000016 sec
+WITH num_booking(listing_id, num) as
+	(SELECT listing_id, count(listing_id) as num
+	FROM transaction 
+	WHERE YEAR(checkin_date) = 2022
+	GROUP BY listing_id),
+    
+	max_booking(num) as
+	(SELECT max(num)
+	FROM num_booking)
+
+SELECT num as num_booking, listing_id, listing_url, name, description, property_type, room_type, accommodates, review_scores_rating
+FROM 
+(SELECT listing_id, num_booking.num
+FROM num_booking, max_booking
+WHERE num_booking.num = max_booking.num) most_booked
+INNER JOIN listing
+ON most_booked.listing_id = listing.id;
+
+
+### 17. Top 10 worst lodgings to be avoided by tourists
+### Duration/Fetch Time: 0.041 sec / 0.000018 sec
+SELECT id, listing_url, name, description, property_type, room_type, accommodates, 
+review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_checkin, 
+review_scores_communication, review_scores_location, review_scores_value
+FROM listing
+WHERE review_scores_rating != 0
+ORDER BY review_scores_rating
+LIMIT 10;
+
+
+### 18. Number of verified hotels near Chinatown neighbourhood
+### Duration/Fetch Time: 0.050 sec / 0.000011 sec
+SELECT count(id) as count
+FROM
+(SELECT latitude, longitude
+FROM location
+WHERE neighborhood_overview LIKE '%Chinatown%') location
+INNER JOIN
+(SELECT id, latitude, longitude, host_id
+FROM listing
+WHERE property_type LIKE '%hotel%') listing
+ON location.latitude = listing.latitude AND location.longitude = listing.longitude
+INNER JOIN host
+ON listing.host_id = host.host_id
+WHERE host_identity_verified = 't';
+
+
+### 19. Lodging with highest total capacity in Bangkok
+### Duration/Fetch Time: 0.036 sec / 0.0087 sec
+WITH max_capacity(capacity) as
+	(SELECT max(accommodates)
+	FROM listing)
+    
+SELECT id, listing_url, name, description, property_type, room_type, accommodates
+FROM listing, max_capacity
+WHERE listing.accommodates = max_capacity.capacity;
+
+
+### 20. Most popular lodging neighbourhood during Halloween (consider checkin_date on Oct 30, 2022 and Oct 31, 2022)
+### Duration/Fetch Time: 0.023 sec / 0.000019 sec
+SELECT neighbourhood, count(listing_id) as count
+FROM 
+(SELECT listing_id
+FROM transaction
+WHERE checkin_date = '2022-10-30' OR checkin_date = '2022-10-31') transaction
+INNER JOIN
+(SELECT id, latitude, longitude FROM listing) listing
+ON transaction.listing_id = listing.id
+INNER JOIN
+(SELECT latitude, longitude, neighbourhood_cleansed as neighbourhood FROM location) location
+ON listing.latitude = location.latitude AND listing.longitude = location.longitude
+GROUP BY neighbourhood
+ORDER BY count DESC
+LIMIT 1;
+
+
+
