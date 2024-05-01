@@ -581,27 +581,27 @@ Transaction relation is derived from processed calendar.csv discussed previously
 The idea to derive transaction relation is to leverage only on two attributes from calendar, namely, dates and available. For each listing_id, I would be keeping track of checkin date and checkout date. Checkin date is defined as the date when available column turns from consecutive status ‘t’ to ‘f’, while checkout date is defined as the date when available column turns from consecutive status ‘f’ to ‘t’. Occupancy period can then be calculated by taking difference between checkin date and checkout date. If checkin date and checkout date is the same, I will assume that occupancy period is 1 day.
 From above model, I proceeded to do text processing using code snippet below to read 1_calendar.csv and to generate two interim output files called 1_checkin.csv and 1_checkout.csv. Both these interim files have same set of attributes as calendar relation. The only exception is that attribute ‘dates’ in checkin.csv reflects checkin date while ‘dates’ in checkout.csv reflects checkout date.
 
-![Figura100](Figure/Figure100.png)
+![Figure100](Figure/Figure100.png)
 
 
 Next step would be to read said 1_checkin.csv and 1_checkout.csv into a pandas dataframe and calculate a new attribute occupancy_period which equals to ‘dates’ from 1_checkout.csv subtracted by ‘dates’ from 1_checkin.csv. Based on BCNF schema reduction discussed in section 4 for data storing, it is concluded that transaction relation can be reduced to only consists of attributes listing_id, checkin_date, and occupancy_period so that it is in BCNF form. The final transaction file is saved as 2_transaction.csv. Code snippet below illustrates steps taken to generate 2_transaction.csv based on 1_checkin.csv and 1_checkout.csv
 
-![Figura101](Figure/Figure101.png)
+![Figure101](Figure/Figure101.png)
 
 ---
 
 ## 3.4. Reviews and Reviewer Relations
 On reviews relation, first step is the same which is to check if there is any null values using check_null() function described in Figure 98 earlier. I can see that there are 2 records under attribute reviewer_name which are missing and there are 24 missing entries under attribute comments. For these 26 missing entries, they will be backfilled with single whitespace since original data type is string.
 
-![Figura102](Figure/Figure102.png)
+![Figure102](Figure/Figure102.png)
 
 Next step would be to replace every single non-ASCII characters in attributes reviewer_name and comments with whitespaces by defining a function called clean_nonasscii().
 
-![Figura103](Figure/Figure103.png)
+![Figure103](Figure/Figure103.png)
 
 Based on BCNF schema reduction discussed in section 4, there are duplicated records on reviewer_name and therefore a new relation called reviewer will be created which consists of only two attributes, namely, reviewer_id and reviewer_name. Final list of attributes in reviews relation would be id, listing_id, reviewer_id, date, and comments. This last step of processing for reviews and reviewer relation can be seen in below code snippet. The output files are 2_reviews.csv and 2_reviewer.csv
 
-![Figura104](Figure/Figure104.png)
+![Figure104](Figure/Figure104.png)
 
 ---
 
@@ -611,7 +611,7 @@ Let’s start the processing discussion in this subsection with listings relatio
 • For attributes having date data type, missing entries would be backfilled with date 2008-08-11 which is the launch date of AirBnB platform application to public. Affected attributes are host_since, first_review, and last_review.
 • For attributes having float or int data type, missing entries are handled in case- by-case basis. Attributes related to rate, review scores, licence, calendar_updated, and neighbourhood_group_cleansed are backfilled with 0. Attributes related to count parameters such as host_listings_count, host_total_listings_count, bedrooms, and beds are backfilled with 1 since each listing must logically have at least 1 on these attributes.
 
-![Figura105](Figure/Figure105.png)
+![Figure105](Figure/Figure105.png)
 
 In Figure 106 below, it provides detailed implementation on null entries backfilling based on action description in Figure 105. On top of that, there are several value update to original non-null records on few columns.
 • Attribute host_response_time applies update_responsetime() function to change the value in such a way that string “within an hour”, “within a day”, and “within a few hours” will be converted to integer 1, 24, and 3 respectively. This is done to ease query pertaining host responsiveness in the later part for query implementation.
@@ -619,53 +619,213 @@ In Figure 106 below, it provides detailed implementation on null entries backfil
 • Attribute bathrooms applies derive_bathroom() function to fetch the number of bathrooms denoted in text-form in attribute bathrooms_text which is of string data type.
 • Attribute price applies update_price() function to remove special characters in the value so that the price can be in float data type.
 
-![Figura106](Figure/Figure106.png)
+![Figure106](Figure/Figure106.png)
 
 Last step of listings relation processing is basically to refer back to BCNF schema reduction discussed in section 4 where multiple intrinsic functional dependencies residing in listing relation are separated out as standalone and separate relations. In this case, there are 4 relations extracted out form listings relation which are scrape relation, location relation, host relation, and host_pic relation. Other than candidate keys of said 4 relations, attributes belonging to these 4 relations would be dropped from original listings relation. Further, based on respective candidate keys, these 4 relations will drop duplicated record entries so as to make the dataset unique. The output of below Figure 107 would be 2_listings.csv, 2_scrape.csv, 2_location.csv, 2_host.csv, and 2_host_pic.csv.
 
-![Figura107](Figure/Figure107.png)
+![Figure107](Figure/Figure107.png)
 
 ---
 
 ## 3.6. Final Unicode Characters Processing
 At this point, I have in total of 9 relation files which are 2_calendar.csv, 2_transaction.csv, 2_reviews.csv, 2_reviewer.csv, 2_listings.csv, 2_host.csv, 2_host_pic.csv, 2_scrape.csv, and 2_location.csv. The prefix “2_” in the file names indicate that they are final version of processed files. Before deploying these CSV files into relational database and non-relational database, last processing step is to convert all remaining non-ASCII characters into whitespaces as can be seen in below code snippet. All the files would be overwritten to same file names respectively based on the output of said last processing step.
 
-![Figura108](Figure/Figure108.png)
+![Figure108](Figure/Figure108.png)
 
 ---
 
 # 4. Data Storing
-
+Once clean data is obtained from data processing stage in previous section, several database design steps are performed to deploy them into traditional relational database management system MySQL and non-relational database management system MongoDB. Such details are discussed in this section.
 
 ---
 
 ## 4.1. Requirement Analysis
+The group is given an AirBnB dataset in the region of Bangkok, Central Thailand, Thailand from [http://insideairbnb.com/get-the-data/](http://insideairbnb.com/get-the-data/). The dataset contains information on the listings, calendar prices, and reviews with summary information.
 
+Each listing can be uniquely identified through its listing ID, and the information on the listing can be divided into several parts:
+- The description of the listing o name
+    - location and neighbourhood o pictures
+    - property and room type
+    - bedrooms
+    - bathrooms
+- The host information of the listing
+    - host ID
+    - name
+- The listing’s minimum and maximum nights to book
+- The listing’s availability
+    - in 30, 60, 90 and 365 days
+- The listing’s review in terms of
+    - total score o accuracy
+    - cleanliness
+    - checkin
+    - communication o location
+    - value
+
+For the calendar prices, it is related to the booking information of a listing on a particular date. Thus, the listing IDs and the date uniquely identifies the data. The information comes with the calendar is:
+- availability
+- price (regular and adjusted)
+- minimum and maximum nights to book
+
+The reviews are uniquely identified through their IDs (not to mix up with the IDs with the listings’ IDs). The information comes with the reviews is:
+- The ID of the listing that the review is associated with
+- Date of the review
+- The information of the reviewer
+    - reviewer ID
+    - reviewer name
+- The comment of the review
+
+For a user of the AirBnB database, the key is to keep track of the transactions of the AirBnB listings in the area:
+- The transaction details
+    - start and end date
+    - duration
+    - total cost
+- The listing detail related to a specific transaction
+- The host detail related to a specific transaction
+- The review detail related to a specific transaction
+
+The above enquiries would be regularly performed by customer service team of AirBnB, especially when a customer has doubt about a transaction or when there is anomaly or complaint on a transaction.
+
+Following this, the data analysts in use of the AirBnB database may need to draw business insight from the data in the area to support follow-up data mining, A/B testing and model training tasks, which eventually drive business decisions. Several examples are:
+- The most popular host (in a given time period and/or given location/neighbourhood)
+- The most popular listing (in a given time period and/or given location/neighbourhood)
+- The most popular location in town (in terms of the number of listings or transactions)
+- The average, shortest and longest stay
+- The average, lowest and highest daily price
+- The peak and off season
+- Listing satisfying specific requirements in terms of any combinations of certain areas, property type, room type, capacity, number of bedrooms, number of bathrooms and/or certain amenities
+- The review score distribution for different neighbourhoods over time
 
 ---
 
 ## 4.2. Conceptual Design
+The goal of the conceptual design is to give a high-level description of the dataset. The entity-relationship (ER) model is chosen to translate the user requirements into a conceptual schema of the database, and it facilitates the database design by allowing specification of an enterprise schema that represents the overall logical structure of the database. Applying the concepts of the ER model, entities with attributes and relationships among them, as well as constraints on entities and relationships need to be specified. The associated ER diagram can then be drawn to represent the overall logical structure of the database graphically.
 
+An entity is an object that exists and is distinguishable from other objects. Based on the preliminary exploration on the dataset in section 2, 3 and 4.1, there are five entity sets: `listing`, `host`, `calendar`, `review` and `transaction`. Each entity belonging to one of these entity sets can be represented by a set of attributes, which are the descriptive properties possessed by all members of an entity set. A subset of the attributes forms a primary key of the entity set; that is, they uniquely identify each member of the set.
+
+The listing.csv can be separated into two entity sets: `listing` and `host`. For entity set listing, each `listing` can be uniquely identified through its `id`, or `listing_id`. Some other attributes that belong to a listing that are in the listing.csv can be seen below in Figure 109.
+
+![Figure109](Figure/Figure109.png)
+
+For entity set `host`, each host can be uniquely identified through its `host_id`. Some other attributes that characterize a host that are in the listing.csv can be referred to in Figure 110.
+
+![Figure110](Figure/Figure110.png)
+
+The association between `listing` and `host` is captured by the relationship `owns`. Since the relationship involves two entity sets, it is a binary relationship. In addition, it is a many-to-one relationship: one listing is associated with at most one host via `owns`; one host is associated with at several listings via `owns`. The entity `listing` has total participation in this relationship because every listing on AirBnB is listed by a host, which means that each listing is owned by a host.
+
+For calendar.csv, it entirely represents the entity set `calendar` as each row is a calendar/daily price of the listing, which can be uniquely identified through the primary key combination `listing_id` and `date`. A few other attributes are `available`, `price`, `adjusted_price`, `maximum_nights` and `minimum_nights`.
+
+The association between listing and calendar is represented by the relationship `shows`, a binary relationship. It is clearly one-to-many: a listing is shown with several calendar prices on different dates via `shows`; a daily price of a listing is associated with at most one listing via `shows`. The entity `calendar` does not fully participate in this relationship by the discovery in section 2.1, one listing in calendar.csv not in listing.csv.
+
+For review.csv, it captures the entity set `review` since each entry is a review for a specific listing on some date. The primary key for a review is its `id` that is associated with a particular review. Other attributes include `listing_id`, `date`, `reviewer_id`, `reviewer_name` and `comments`.
+
+The relationship between calendar and review is `writes`, a binary relationship. It is a one-to-one relationship: a review is associated with at most one daily price of a listing with unavailability via `writes`; a daily price of a listing with unavailability is associated with at most one review via `writes`.
+
+For the last entity set `transaction`, it comes from a csv file that is generated from calendar.csv. The relationship between the two entity sets is captured in the relationship `books`. The entity set `transaction` has three attributes: `listing_id`, `checkin_date` and `occupancy_period`. It is naturally to think that for each transaction, a `listing_id` and `checkin_date` would be sufficient to uniquely identify it as a single listing can only be checked in once on a specific date in theory; however, the attribute `listing_id` replicate information that are already present in the entity set `calendar`. Notice that although `checkin_date` is essentially date in the `calendar` entity, since it is more of a derived attribute from the logic of constructing a transaction, it is decided to not treat `checkin_date` as a replicate information that is already being represented by `date` in the `calendar` entity.
+
+A way to deal with redundancy is to not store the attribute `listing_id` in the transaction entity and only to store the remaining attributes `checkin_date` and `occupancy_period`. By doing so, the entity `transaction` would not have enough attribute to identify a particular transaction entity uniquely. To deal with this problem, the relationship books should be treated as a special relationship that provides extra information, `listing_id`, that is required to identify the `transaction` entity uniquely.
+
+By doing so, `transaction` becomes a weak entity set whose existence depends on another entity `calendar`, its identifying entity or the strong entity. Instead of providing a primary key directly for this weak entity, it is more concise to use the identifying entity with the discriminator, which is the extra attribute, `checkin_date`, that is originally necessary to construct the primary key.
+
+Hence, the relationship associating `transaction` and `calendar`, `books`, is now an identifying relationship. It is a many to one relationship: a daily price of a listing is associated with at most one transaction via `books`; a transaction is associated with many daily prices of a listing throughout the span of the check-in date and check-out date via `books`. It is not a total participation on the many side as some listings are available on some dates, meaning there are no transaction for them.
+
+In the ER diagram, the entity sets are represented by rectangles, and the weak entity set is in double rectangle. The attributes are listed inside the entity rectangle while the primary key(s) is/are underlined, and the discriminating attribute of the weak entity set is in dashed underline.
+
+The relationships are represented by diamonds, and the identifying relationship for the weak entity set is in double diamond. For the relationship cardinality, the one is represented by pointed arrow, and the many is represented by a line. If the participation on the many side is total participation, the line becomes two parallel lines. The full ER diagrams is shown in Figure 111.
+
+![Figure111](Figure/Figure111.png)
 
 ---
 
 ## 4.3. Logical Design
+AirBnB dataset has three main tables: `listings`, `calendar` and `reviews`, stored in listings.csv, calendar.csv and reviews.csv. Also, I created a new table based on the existing data named `transaction` for better analysis. The `transaction` table contains three attributes: `listing_id`, `occupancy_period` and `checkin_date`. "listing_id" is referenced from table `listings`, "occupancy_period" is derived from calendar.csv by looking at which date the listing is available and when it's not. From there, I also noted the so-called "checkin_date". Additionally, there could be 2 different guests who check in right after the previous guest leaves. However, for simplification purpose for my query, let's assume that 1 guest stays the entirety of occupancy_period in a tuple.
 
+For detailed relation among those tables, in table `listings`, "id" is its primary key, and it has many attributes for which I will elaborate later. In table `reviews`, it has "reviewer_id" as its primary key, and "listing_id" as foreign key referenced from listings. In table `calendar`, neither "date" nor "listing_id" is unique, but "date" together with "listing_id" can be unique and determines a certain tuple in the table, so I set "date" and "listing_id" as primary key. Also, "listing_id" is referenced from table `listings`. In table `transaction`, "listing_id" can be seen as its primary key, and it is referenced from table `listings`. "checkin_date" can be seen as foreign keys referenced from `calendar` "date". The relational schema for AirBnB is shown in Figure 112:
+
+![Figure112](Figure/Figure112.png)
+
+Then investigate the attributes in table `listings`. `Listings` contain many attributes, and I can divide them into eight categories based on their meaning and actual usage. The detail of the categories of the attributes besides id in listings can be seen in below table.
+
+| Categories of the Attributes Besides id | Explanation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|Basic information                        |Some basic description of a listing, like name, listing_url, location (include latitude and longitude), source, picture_url                                                                                                                                                                                                                                                                                                                                                                       |
+|Scrape information                       |Information for AirBnB 'scrape', including scrape_id and last_scraped (The date and time this listing was scraped)                                                                                                                                                                                                                                                                                                                                                                                |
+|Host information                         |Information for the host of the listing, including its name, url, location, acceptance_rate                                                                                                                                                                                                                                                                                                                                                                                                       |
+|Room information                         |Room description, including property_type (hotels and beds and breakfast), room_type, description and number of bedrooms, description and number of bathrooms, daily price in local currency(price), minimum and maximum night stay for the listing (minimum nights, maximum nights), the smallest and largest minimum_night/maximum_night value from the calendar (minimum_minimum_nights, minimum_maximum_nights, minimum_minimum_nights, maximum_minimum_nights, maximum_maximum_nights), etc. |
+|Neighborhood information                 |Description of the neighborhood, including neighborhood_overview, neighborhood_cleansed and neighborhood_group_cleansed.                                                                                                                                                                                                                                                                                                                                                                          |
+|Review information                       |Information of the review of the listing, including the number of reviews it received and the information of review scores, etc.                                                                                                                                                                                                                                                                                                                                                                  |
+|Calculation information                  |The number of entire/private/shared room listings the host has in the currect scrape.                                                                                                                                                                                                                                                                                                                                                                                                             |
+|Availability information                 |The availability of the listing 30/60/90/365 days in the future as determined by the calendar.                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+The detailed attributes in every category of `listings` can be seen in Figure 113. Every entity in the figure corresponds to one category of `listings`, and follows the detailed attributes in the category.
+
+![Figure113](Figure/Figure113.png)
 
 ---
 
 ## 4.4. BCNF Schema Reduction
+There are many functional dependencies in current schema. In order to prevent the redundancy in the dataset, I need to refine my dataset schema by decomposing it to BCNF form. Boyce-Codd Normal Form (BCNF) schema has all relations being trivial or indicated by the super keys. Therefore, all relations can be easily observed from the keys with minimizing the replicated data in the schema.
 
+In order to obtain the functional dependencies in the dataset, I can group attributes using the word descriptions of them. By accessing the parts one by one, I can determine all the super keys over the grouped attributes. Python code was used to determine whether some key or group of keys can uniquely define their attributes group. Currently I have 4 datasets, listings.csv, calendar.csv, reviews.csv and transaction.csv.
+
+In listings relation, both “id” and “listing_url” are the candidate keys for the whole listing schema. Then I can group the attributes of listings by their word descriptions to explore their dependencies. There are no keys that can uniquely determine some attributes in the rest of the groups. The names for these groups are: scrape, host, host_pic, location, basic information, room description, number of nights to stay, availability, reviews, calculated host listing count.
+• The first group is scrape. Scrape_id and last_scrape are seems to be closely related, so I create a scrape table to contain these two variables. In order to simplify the listing table, I will use listing_id as the key for table scrape.
+• The second group is “host”. Both “host_id” and “host_url” can uniquely determines all the variables in the “host” group, and I choose to use “host_id” as the primary key of table host. Notice that both “host_picture_url” and “host_thumbnail_url” uniquely determines “host_has_profile_pic”. In order to reach BCNF, I create a new table `host_pic` with 3 attributes. Both “host_picture_url” and “host_thumbnail_url” are candidate keys for host_pic. Also notice that host_listings_count share the exact same content with host_total_listings_count. Therefore, I remove the attribute host_listings_count from the host table.
+• The third group is “location”. The combination of latitude and longitude can uniquely define three location attributes: neighborhood_overview, neighbourhood_cleansed, and neighbourhood_group_cleansed. So I create a new table location for these 6 attributes.
+
+![Figure114](Figure/Figure114.png)
+
+In the calendar.csv, the only functional dependency is that the combination of listing_id and date uniquely determines all other attributes in calendar. So the calendar table is already in BCNF.
+
+The transaction.csv is created from the calendar.csv. Therefore, the primary key for transaction is the combination of listing_id and checkin_date. It can uniquely determine the value of occupancy_period. There are no other relationship in transaction table.
+
+In the reviews.csv, there are two relations. The first relation is id serves as the primary key of the review table. The second relationship is reviewer_id uniquely determines reviewer_name. Therefore, I decompose the reviews table with creating the reviewer.csv. This will improve the structure of database since the content of reviewer can be easily updated without creating too much redundancy now.
+In conclusion, I will have nine csv files in the end post data processing, namely, 2_calendar.csv, 2_transaction.csv, 2_reviews.csv, 2_reviewer.csv, 2_listings.csv, 2_host.csv, 2_scrape.csv, 2_host_pic.csv and 2_location.csv. A relational schema diagram in BCNF form is shown below as Figure 115.
+
+![Figure115](Figure/Figure115.png)
 
 ---
 
 ## 4.5. Data Deployment at Relational Database
+Upon achieving BCNF form of all relations on AirBnB dataset, I first consider to deploy the dataset at traditional relational database MySQL. In order to import the dataset from 9 CSV files listed in previous subsection, schemas of each relation are defined accordingly. The list of schema definition would be elaborated in Figure 116 which conforms to logical design post BCNF schema reduction in previous subsection.
 
+![Figure116](Figure/Figure116.png)
+
+In Figure 116 above, I indicated number of sequence from 1 to 9 which signifies order of dataset deployment to MySQL. This sequence ensures that all independent relations (i.e. with no foreign key) are imported first as other relations would be dependent on these independent relations. Notable experience I had during dataset deployment was long time needed to import calendar relation which took around 3 hours.
 
 ---
 
 ## 4.6. Data Deployment at Non-Relational Database
+Other alternative for data deployment would be on non-relational database. For massive data query, traditional RDBMS poses low efficiency. When the amount of data reaches a certain scale, it will encounter bottlenecks and it is difficult to expand. When there is a need to modify the table structure, it is difficult to modify the table structure, and it is difficult to adapt to the frequently changing business needs. Moreover, about the cost, license fees and expansion fees of RDBMS are higher.
 
+---
+
+### 4.6.1. Comparison between MongoDB and HBase
+In order to decide which non-relational database, MongoDB characteristics are compared against HBase characteristics in this subsection. For further classification, NoSQL can be divided into several classifications based on the way of storage:
+
+1. Document Database
+The notable representatives for document database storage are MongoDB and CouchDB. In terms of features, document database enforces document as the basic unit of processing information. A document can be long, complex, and unstructured, similar to a word processing document. A document is equivalent to a record in a relational database.
+
+2. Column Store Database
+The notable representatives for column store database storage are HBase and Cassandra. In terms of features, column-related storage database provides architecture which is suitable for processing large batches of data.
+
+We compare two representative NoSQL Databases: HBase and MongoDB from several dimensions like storage structure, environment construction, performance, etc. The details of comparison results can be seen in the two tables below.
+
+![Figure116a](Figure/Figure116a.png)
+
+In general, MongoDB is more friendly to beginners, for it is easier to install and its syntax is easier to understand. For efficiency, although the performance of MongoDB is slightly worse than HBase when the data volume is large, but it can do query for various conditions with high flexibility.
+
+---
+
+### 4.6.2. Data Deployment at MongoDB
+We directly do data deployment using its GUI: MongoDB Compass. So first, install MongoDB and its GUI MongoDB Compass, then create a database named AirBnB. Figure 117 shows that I successfully created a database for AirBnB.
+
+![Figure117](Figure/Figure117.png)
+
+Then under the database AirBnB, I created the same collections as the csv files and import the corresponding data into the collections by using the button ‘import data’. Before importing, I have to define the data type of every attribute (the default data type is ‘String’), the definition of data type is the same as relational database.
+
+There are nine collections in total: calendar, host, host_pic, listings, location, reviewer, reviews, scrape and transaction. The detailed information for each collection can be seen in Figure 118.
+
+![Figure118](Figure/Figure118.png)
 
 ---
 
