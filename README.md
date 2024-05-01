@@ -830,36 +830,162 @@ There are nine collections in total: calendar, host, host_pic, listings, locatio
 ---
 
 # 5. Data Retrieval
-
+In this section, 20 natural language (NL) queries are listed based on the requirement analysis. The data retrieval is performed in both MySQL and MongoDB. Comparison is then made between the relational and non-relational database in terms of ease of implementation and query response time.
 
 ---
 
 ## 5.1. MySQL Queries
+1. NL Query: Top 10 most popular host
+Duration/Fetch Time: 0.148 sec / 0.000027 sec. 
+Total Response Time: 0.15 sec
 
+![Figure118_0a](Figure/Figure118_0a.png)
+
+2. NL Query: Top 10 most popular room (i.e. listings) 
+Duration/Fetch Time: 0.040 sec / 0.000011 sec. 
+Total Response Time: 0.04 sec
+
+![Figure118_0b](Figure/Figure118_0b.png)
+
+3. NL Query: Top 10 most popular lodging locations 
+Duration/Fetch Time: 0.079 sec / 0.000011 sec. 
+Total Response Time: 0.07 sec
+
+![Figure118_0c](Figure/Figure118_0c.png)
+
+4. NL Query: Which lodging is occupied the longest? 
+Duration/Fetch Time: 11.197 sec / 0.000026 sec. 
+Total Response Time: 10.93 sec
+
+![Figure118_0d](Figure/Figure118_0d.png)
+
+5. NL Query: Visitor’s name giving most reviews 
+Duration/Fetch Time: 0.278 sec / 0.000020 sec. 
+Total Response Time: 0.50 sec
+
+![Figure118_0e](Figure/Figure118_0e.png)
+
+6. NL Query: Top 10 most expensive seasonal lodging 
+Duration/Fetch Time: 12.427 sec / 0.000030 sec. 
+Total Response Time: 12.40 sec
+
+![Figure118_0f](Figure/Figure118_0f.png)
+
+7. NL Query: Top 10 most recommended lodgings for a family of 4 (referring to review score)
+Duration/Fetch Time: 0.0034 sec / 0.000023 sec. 
+Total Response Time: 0.003 sec
+
+![Figure118_0g](Figure/Figure118_0g.png)
+
+8. NL Query: Lodgings with most frequent price adjustment 
+Duration/Fetch Time: 3.018 sec / 0.000024 sec. 
+Total Response Time: 2.98 sec
+
+![Figure118_0h](Figure/Figure118_0h.png)
+
+9. NL Query: Top 10 lodgings with most amenities listed 
+Duration/Fetch Time: 0.053 sec / 0.000010 sec. 
+Total Response Time: 0.07 sec
+
+![Figure118_0i](Figure/Figure118_0i.png)
+
+10. NL Query: Top 10 oldest listed condominium that has Gym and Pool facilities
+Duration/Fetch Time: 0.055 sec / 0.000014 sec. 
+Total Response Time: 0.04 sec
+
+![Figure118_0j](Figure/Figure118_0j.png)
+
+11. NL Query: Host with highest monthly revenue
+Duration/Fetch Time: 3.614 sec / 0.000029 sec. 
+Total Response Time: 3.59 sec
+
+![Figure118_0k](Figure/Figure118_0k.png)
+
+12. NL Query: Neighbourhood with most crowded lodgings 
+Duration/Fetch Time: 0.094 sec / 0.000010 sec. 
+Total Response Time: 0.07 sec
+
+![Figure118_0l](Figure/Figure118_0l.png)
+
+13. NL Query: Most popular season in Bangkok
+Duration/Fetch Time: 0.018 sec / 0.000010 sec. 
+Total Response Time: 0.01 sec
+
+![Figure118_0m](Figure/Figure118_0m.png)
+
+14. NL Query: Top 10 most responsive lodgings which are equipped with Gym
+Duration/Fetch Time: 0.057 sec / 0.000012 sec. 
+Total Response Time: 0.08 sec
+
+![Figure118_0n](Figure/Figure118_0n.png)
+
+15. NL Query: Top 10 lodgings with highest average price increase during Christmas and New Year
+Duration/Fetch Time: 1.257 sec / 0.000031 sec. 
+Total Response Time: 1.26 sec
+
+![Figure118_0o](Figure/Figure118_0o.png)
+
+16. NL Query: Most booked lodgings in year 2022 (in terms of occupancy_period)
+Duration/Fetch Time: 0.021 sec / 0.00016 sec. 
+Total Response Time: 0.02 sec
+
+![Figure118_0p](Figure/Figure118_0p.png)
+
+17. NL Query: Most booked lodgings in year 2022 (in terms of number of bookings)
+Duration/Fetch Time: 0.020 sec / 0.000011 sec. 
+Total Response Time: 0.02 sec
+
+![Figure118_0q](Figure/Figure118_0q.png)
+
+18. NL Query: Top 10 worst lodgings to be avoided by tourists 
+Duration/Fetch Time: 0.029 sec / 0.000016 sec. 
+Total Response Time: 0.03 sec
+
+![Figure118_0r](Figure/Figure118_0r.png)
+
+19. NL Query: Number of verified hotels near Chinatown neighbourhood 
+Duration/Fetch Time: 0.046 sec / 0.000011 sec. 
+Total Response Time: 0.06 sec
+
+![Figure118_0s](Figure/Figure118_0s.png)
+
+20. NL Query: Lodgings with highest total capacity in Bangkok 
+Duration/Fetch Time: 0.029 sec / 0.0065 sec. 
+Total Response Time: 0.05 sec
+
+![Figure118_0t](Figure/Figure118_0t.png)
+
+21. NL Query: Most popular lodging neighbourhood during Halloween (consider checkin_date on Oct 30, 2022 and Oct 31, 2022)
+Duration/Fetch Time: 0.017 sec / 0.000010 sec. 
+Total Response Time: 0.02 sec
+
+![Figure118_0u](Figure/Figure118_0u.png)
 
 ---
 
 ## 5.2. MongoDB Queries
 
-
 ---
 
 ## 5.3. Database System Comparison
-
-
----
-
-# 6. Project Summary
-
+Based on our experience on deploying Airbnb dataset into both relational database and non-relational database, we drew few conclusions as follows:
+- Traditional relational database like MySQL upholds referential integrity that always guarantees accuracy and consistency of data based on primary and foreign keys relationship, along with constraints posed on all said keys. When deletion on primary record is attempted, such transaction is only possible by firstly removing dependent records related to said primary record, or else such transaction will be prohibited. This is done to avoid possibility where referenced records no longer have a primary record. On non-relational database, however, consistency is deprioritized over scalability and performance and therefore non-relational database may pose a little insecurity as compared to the relational database.
+- Non-relational database illustrates elastic scalability in the face of growing data with low maintenance cost since data is not confined to a structured group. In contrast, relational database suffers higher maintenance cost due to its rigid standardization from fixed schema definition and therefore less flexibility is allowed.
+- Data deployment to relational database takes more effort than that in non- relational database due to strict schema implementation in relational database.
 
 ---
 
-## 6.1. Conclusion
-
+# 6. Conclusion
+Throughout the effort in completing this project, I was able to apply my knowledge on Data Warehousing to understand basic process of data managemnet and retrieval in real applications and organizations. Such processes include data exploration where I understaood the dataset semantic and structure; data processing whre I took care of rroneous data in the form of missing records, dluplicatd value, presence of redundancies, characters encoding from extended Unicode due to presence of multiple languages; data generation where we generated transaction table from rigorous effort of processing on actual data in calendar table; data storing where we conducted requirement analysis, conceptual design, logical design, schema refinement, and transformation for data deployment in relational database MySQL and non-relational database MongoDB; and last but most importantly how to retrieve data from both database systems based on several samples of user queries.
+All these exercises broadened my knowledge horizon which leads me to few key takeaway comparison between relational database and non-relational database such as the fact that relational database upholds standardization through strict schema definition which guarantees data consistency with rather high maintenance cost for scalability purpose. On the other hand, non-relational database prioritizes scalability on growing data and high performance execution due to its flexible schema while sacrificing its data consistency traits due to aforesaid schema flexibility.
 
 ---
 
-## 6.2. Future Work
+# 7. Future Work
+In the future, an implementation of a front end system or a data platform that monitors the operation of the database and delivers business intelligence reports would be beneficial for the user of the database.
 
+One thought on the front end system would be using the Django web framework to integrate the underlying MySQL database with the front end display. This will help to facilitate automated process to alter database via deletion or addition.
 
+Another thought on the business intelligence report is to utilize Microsoft Power BI, an interactive data visualization software product developed by Microsoft with a primary focus on business intelligence. An example of using Power BI to deliver business insights on Airbnb data in Boston is shown below in figure 119 (Airbnb Boston Report – Power BI, 2019). From the figure, the data analysts can easily see the density of the housing in the city, count of housing by neighbourhood and average price of the listings with clear graphs and charts, which is also more understandable to the stakeholders that rely on such information to decide on business strategies.
 
+![Figure119](Figure/Figure119.png)
