@@ -59,23 +59,19 @@ The data attributes are then analyzed as follows:
 - **available**: There are two levels for available: t and f, corresponding to the availability of the listing on a particular date. There are 4,329,257 rows with t and 1902388 rows with f.
 - **price**: The price ranges from $252.0 to $1500000.0 with a median of $1,215.0. Together with five-number summary and histogram of price in Figure 1 and Figure 2, it indicates that most of the prices are low, with a few very high prices that makes the distribution of price highly skewed to the right.
 
-![Figure 1 Five-Number Summary of price](Figure/Figure1.png)
-![Figure 2 Histogram of price](Figure/Figure2.png)
+![Figure1_2](Figure/Figure1_2.png)
 
 - **adjusted_price**: The adjusted price ranges from $165.0 to $1,500,000.0, with a median of $1,200.0. There are 333,341 rows with adjusted price different from the listed price. 329,672 rows have higher price than adjusted price, which is 98.9% of the time the host will set a lower adjusted price; 3,669 rows have lower price than adjusted price, which is 1.1% of the time the host will set a higher adjusted price. The maximum price increase is $20,000.0, and the maximum price decrease is $2,370.0. The distribution of the adjusted price is very similar to that of the price as shown in Figure 3 and Figure 4 through five-number summary and histogram.
 
-![Figure 3 Five-Number Summary of adjusted_price](Figure/Figure3.png)
-![Figure 4 Histogram of adjusted_price](Figure/Figure4.png)
+![Figure3_4](Figure/Figure3_4.png)
 
 - **minimum_nights**: The minimum nights a guest can book on a particular date ranges from 1 day to 1,125 days, with a median of 1 day. Out of the 6,231,465 rows, there are 3,468,431 rows with minimum nights of 1 day, which is 55.7% of the rows. Most of the listings have small minimum nights requirement, but there are some with around 200 days and 400 days and few even higher, which leads to a highly skewed to the right distribution. The five-number summary and histogram of minimum nights is shown in Figure 5 and Figure 6.
 
-![Figure 5 Five-Number Summary of minimum_nights](Figure/Figure5.png)
-![Figure 6 Histogram of minimum_nights](Figure/Figure6.png)
+![Figure5_6](Figure/Figure5_6.png)
 
 - **maximum_nights**: The maximum nights a guest can book on a particular date ranges from 1 day to 2,147,483,647 days. Examining the quantiles through Figure 7 reveals a highly skewed to the right distribution, and the same result is shown in the histogram in Figure 8.
 
-![Figure 7 Five-Number Summary of maximum_night](Figure/Figure7.png)
-![Figure 8 Histogram of maximum_nights](Figure/Figure8.png)
+![Figure_7_8](Figure/Figure7_8.png)
 
 The attribute constraints, potential primary keys and foreign keys are as follows:
 - primary key (listing_id, date)
@@ -112,12 +108,12 @@ The data attributes are then analyzed as follows:
 - **date**: The reviews spans from February 09, 2011 to June 21, 2022. Comparing
 with the dates from calendar.csv, there is not much overlapping: only June 20 and June 21 of the year 2022 are in calendar.csv. In total, there are only 41 reviews on left on these two dates. In addition, the review date is not necessarily a leave date or occupying date of the reviewer’s stay at the listing. Figure 9 below shows a distribution of the number of review by year. It can be seen that the distribution follows a bell shape: most of the reviews were left in the year of 2017 to 2020. This is somewhat aligned with the growth of AirBnB during those years.
 
-![Figure 9 Number of Reviews by Year](Figure/Figure9.png)
+![Figure9](Figure/Figure9.png)
 
 - **reviewer_id**: There are 210,367 unique reviewer IDs. Comparing with the 246,644 rows in reviews.csv, there are reviews left by the same reviewer, either for the same listing or different listing (240,229 reviews with different listing and reviewer), on the same date or not (246,613 reviews with different listing, reviewer and date).
 - **reviewer_name**: The maximum number of characters for reviewer’s name is 42 characters. There are 43 different languages in the reviewer’s name, where the language detection is done using python package langdetect. The detection returns a list of languages in ISO 639-1 codes (“List of ISO 639-1 codes,” 2022), where their corresponding languages are shown in Figure 10.
 
-![Figure 10 Languages in reviewer_name](Figure/Figure10.png)
+![Figure10](Figure/Figure10.png)
 
 - **comments**: The maximum number of characters for reviewer’s name is 6,577 characters. There are 44 languages used in comments, including all of the 43 languages used in reviewer’s name plus Urdu.
 
@@ -286,131 +282,269 @@ The data attributes are then analyzed as follows:
 - **last_scraped**: There are two days that the AirBnB data was last scraped: June 20 and June 21 of the year 2022.
 - **name**: There are duplicate names for the listings as there are only 16,089 unique names. The maximum number of characters for name is 255 characters. There are 39 different languages in the name of the listing as shown in Figure 11.
 
-![Figure 11 Languages in name](Figure/Figure11.png)
+![Figure11](Figure/Figure11.png)
 
 - **description**: There are duplicate description for the listings as there are only 13,298 unique listing description. The maximum number of characters for description is 1,000 characters. There are 29 different languages in the description of the listing as shown in Figure 12.
 
-![Figure 12 Languages in description](Figure/Figure12.png)
+![Figure12](Figure/Figure12.png)
 
 - **neighborhood_overview**: There are duplicate neighbourhood description for the listings as there are only 6002 unique neighbourhood description. The maximum number of characters for neighbourhood description is 1000 characters. There are 31 different languages in the neighbourhood description of the listing as shown in Figure 13.
 
-![Figure 13 Languages in neighborhood_overview](Figure/Figure13.png)
+![Figure13](Figure/Figure13.png)
 
 - **picture_url**: There are 15,799 unique picture URLs. The maximum number of characters for the URL that hosts the first image of the listing is 122 characters.
 - **host_id**: There are 7,639 unique host IDs, meaning there are 7,639 different hosts in total. The maximum number of digits for the host's ID is 9 digits.
 - **host_url**: There are 7,639 unique host URLs, which is of the same number of the unique host IDs. The maximum number of characters for the host’s URL is 42 characters.
 - **host_name**: There are 5,991 unique host names. Comparing the number with the number of hosts in the area, there are hosts with the same name. The maximum number of characters for the host’s name is 35 characters. There are 37 different languages in the host’s name as shown in Figure 14.
 
-![Figure 14 Languages in host_name](Figure/Figure14.png)
+![Figure14](Figure/Figure14.png)
 
 - **host_since**: The date that the host was created spans from December 02, 2009 to June 17, 2022. The distribution of the host creation date is shown in Figure 15, and it follows somewhat bimodal distribution with the highest number of host creation around the year of 2015 and 2016 and the year of 2018 and 2019.
 
-![Figure 15 Distribution of host_since by Year](Figure/Figure15.png)
+![Figure15](Figure/Figure15.png)
 
 - **host_location**: For the host location, there are 632 unique host locations. Some of the locations more detailed with district and city information while others just have country. The maximum number of characters for the host’s self- reported location is 125 characters. There are 27 different languages in the host’s location as shown in Figure 16.
 
-![Figure 16 Languages in host_location](Figure/Figure16.png)
+![Figure16](Figure/Figure16.png)
 
 - **host_about**: There are 3,305 unique host’s self-description. The maximum number of characters for the host’s self-description is 5,893 characters. There are 27 different languages in the host’s self-description as shown in Figure 17.
 
-![Figure 17 Languages in host_about](Figure/Figure17.png)
+![Figure17](Figure/Figure17.png)
 
 - **host_response_time**: The host’s response time has five levels: within an hour, within a few hours, within a day, a few days or more, nan(missing values). There are 7,033 listings with host’s response time within an hour, 1,420 listings of within a few hours, 1,252 listings of within a day, 1,740 listing of a few days or more, 5,629 of rows with missing value as shown in Figure 18. The maximum number of characters for the host’s response time is 18 characters.
 
-![Figure 18 Distribution of host_response_time](Figure/Figure18.png)
+![Figure18](Figure/Figure18.png)
 
 - **host_response_rate**: There are 54 levels of host’s response rate. The attribute is of string data type in the csv file, but it is actually capturing numerical information. The host’s response time ranges from 0% to 100% with the majority of the listings have a host’s response rate of 100%. Figure 19 shows that the distribution of the host’s response rate is highly skewed to the right as a few listings have very low host’s response rate.
 
-![Figure 19 Distribution of host_reponse_rate](Figure/Figure19.png)
+![Figure19](Figure/Figure19.png)
 
 - **host_acceptance_rate**: There are 70 levels of host’s response rate. The attribute is of string data type in the csv file, but it is actually capturing numerical information. The host’s acceptance time ranges from 0% to 100% with the majority of the listings have a host’s acceptance rate of 100%. Figure 20 shows that the distribution of the host’s acceptance rate is highly skewed to the right as a few listings have very low host’s acceptance rate.
 
-![Figure 20 Distribution of host_ acceptance_rate](Figure/Figure20.png)
+![Figure20](Figure/Figure20.png)
 
 - **host_is_superhost**: There are three levels: f, t, nan(missing value). There are 15235 rows with f, 1837 rows with t and 2 rows with missing value.
 - **host_thumbnail_url**: There are 7,557 unique host's profile pictures (displayed in small) on the listing page. The maximum number of characters for the host’s thumbnail URL is 106 characters.
 - **host_picture_url**: There are 7,557 unique host's profile pictures (displayed in medium) on the listing page. The maximum number of characters for the host’s thumbnail URL is 109 characters.
 - **host_neighbourhood**: There are 89 unique neighbourhood that the host lives in. The maximum number of characters for these neighbourhoods is 28 characters. There are 20 different languages in these neighbourhoods as shown in Figure 21.
 
-![Figure 21 Languages in host_neighborhood](Figure/Figure21.png)
+![Figure21](Figure/Figure21.png)
 
 - **host_listings_count**: The number of listings that the host has ranges from 0 listing to 422 listings with a median of 3 listings. With few very large host's listing count, its distribution is highly skewed to the right as shown in Figure 22 and Figure 23 through the five-number summary and the histogram.
 
-![Figure 22 Five-Number Summary of host_listings_count](Figure/Figure22.png)
-![Figure 23 Histogram of host_listings_count](Figure/Figure23.png)
+![Figure22_23](Figure/Figure22_23.png)
 
 - **host_verifications**: There are three ways that a host can confirm identity: phone, email and work email. Hence there are 8 levels in total: 6 combinations of the three ways, no verification and no information on the verification. There are 12,773 rows with verified email and phone, 2,168 rows with verified email, phone and work email, 1,916 rows with verified phone, 108 rows with verified phone and work email, 60 rows with no verification, 45 rows with verified email, 2 rows with verified work_email and 2 rows with no information on verification. The distribution can be seen in Figure 24. The maximum number of characters for the host’s verification is 32 characters.
 
-![Figure 24 Distribution of host_verifications](Figure/Figure24.png)
+![Figure24](Figure/Figure24.png)
 
 - **host_has_profile_pic**: The attribute has three levels: f, t, nan(missing value). There are 16,922 rows with t, 150 rows with f and 2 rows with missing value.
 - **host_identity_verified**: The attribute has three levels: f, t, nan(missing value). 16,922 rows with t, 150 rows with f and 2 rows with missing value. The host with host ID 21,348,778 has two listings in the area, and there is no information on this host except his/her host ID and URL.
 - **neighbourhood**: There are 729 unique neighbourhoods of the listings. The maximum number of characters for the neighbourhood is 84 characters. There are 9 different languages for this attribute: English, Finnish, Indonesian, Dutch, Norwegian, Swahili, Thai, Tagalog, Vietnamese.
 - **neighbourhood_cleansed**: After cleaning the neighbourhood data with geological information, there are now only 50 different neighbourhoods. The row counts for each neighbourhood is shown below in Figure 25, and the distribution is shown in Figure 26. The maximum number of characters for the neighbourhood is 20 characters.
 
-![Figure 25 Level Count for neighbourhood_cleansed](Figure/Figure25.png)
-![Figure 26 Distribution of neighbourhood_cleansed](Figure/Figure26.png)
+![Figure25_26](Figure/Figure25_26.png)
 
 - **neighbourhood_group_cleansed**: This attribute does not contain any information as it only has empty values.
 - **latitude**: The latitude of the listing ranges from 13.5273 to 13.97355. The distribution has a bell-shape, which is similar to normal distribution. The five- number summary and the histogram are shown below in Figure 27 and Figure 28.
 
-![Figure 27 Five-Number Summary of latitude](Figure/Figure27.png)
-![Figure 28 Histogram of latitude](Figure/Figure28.png)
+![Figure27_28](Figure/Figure27_28.png)
 
 - **longitude**: The longitude of the listing ranges from 100.31062 to 100.92344. The distribution has a bell-shape, which is similar to normal distribution. The five-number summary and the histogram are shown below in Figure 29 and Figure 30.
 
-![Figure 29 Five-Number Summary of longitude](Figure/Figure29.png)
-![Figure 30 Histogram of longitude](Figure/Figure30.png)
+![Figure29_30](Figure/Figure29_30.png)
 
 - **property_type**: There are 86 types of property. The row counts for each property type is shown in Figure 31, and the distribution plot is in Figure 32. The most popular property type is entire rental unit, followed by entire condo. The maximum number of characters for property type is 34 characters.
 
-![Figure 31 Level Counts for property_type](Figure/Figure31.png)
-![Figure 32 Distribution of property_type](Figure/Figure32.png)
+![Figure31_32](Figure/Figure31_32.png)
 
 - **room_type**: There are 4 room types: entire home/apt, private room, hotel room and shared room. There are 9,224 rows with entire home/apt, 6,445 rows with private room, 794 rows with hotel room and 611 rows with shared room. The distribution plot is in Figure 33. The maximum number of characters for room type is 15 characters.
 
-![Figure 33 Distribution of room_type](Figure/Figure33.png)
+![Figure33](Figure/Figure33.png)
 
 - **accommodates**: The maximum capacity of the listing ranges from 0 to 16 people. Most of the listings can accommodate less or equal to 5 people, while few listings can host up to 16 guests. This leads to a right skewed distribution as shown in Figure 34 and Figure 35 by the five-number summary and histogram.
 
-![Figure 34 Five-Number Summary of accommodates](Figure/Figure34.png)
-![Figure 35 Histogram of accommodates](Figure/Figure35.png)
+![Figure34_35](Figure/Figure34_35.png)
 
 - **bathrooms**: This attribute hosts no information as it is an empty column.
 - **bathrooms_text**: There are 60 different descriptions of the bathrooms. The row count for each bathroom description is shown below in Figure 36, and the distribution plot is in Figure 37. The most popular bathroom description is 1 bath, followed by 1 private bath. The maximum number of characters for bathroom’s description is 17 characters.
 
-![Figure 36 Level Counts for bathrooms_text](Figure/Figure36.png)
-![Figure 37 Distribution of bathrooms_text](Figure/Figure37.png)
+![Figure36_37](Figure/Figure36_37.png)
 
 - **bedrooms**: The number of bedrooms that listings have ranges from 1 to 50. This leads to a very right skewed distribution as shown by the five-number summary and the histogram in Figure 38 and Figure 39. Most of the listings have 1 bedroom, while few listings have up to 50 bedrooms.
 
-![Figure 38 Five-Number Summary of bedrooms](Figure/Figure38.png)
-![Figure 39 Histogram of bedrooms](Figure/Figure39.png)
+![Figure38_39](Figure/Figure38_39.png)
 
 - **beds**: The number of beds that listings have ranges from 1 to 50. Most of the listings have 1 to 2 beds, while few listings have up to 50 beds. This leads to a very right skewed distribution as shown by the five-number summary and the histogram in Figure 40 and Figure 41.
 
-![Figure 40 Five-Number Summary of beds](Figure/Figure40.png)
-![Figure 41 Histogram of beds](Figure/Figure41.png)
+![Figure40_41](Figure/Figure40_41.png)
 
 - **amenities**: There are 13,880 unique description of amenities included in the listings. The maximum number of characters for amenities’ description is 1,606 characters.
 - **price**: The listing’s price ranges from $0 to $1,500,000, and it does not match with the price in calendar.csv. The distribution of the price is highly skewed to the right as shown in five-number summary and the histogram in Figure 42 and Figure 43.
 
-![Figure 42 Five-Number Summary of price](Figure/Figure42.png)
-![Figure 43 Histogram of price](Figure/Figure43.png)
+![Figure42_43](Figure/Figure42_43.png)
 
 - **minimum_nights**: The minimum number of nights for the listing ranges from 1 to 1,125 days. Most of the listings have a minimum less or equal to 7 days. Its distribution is highly skewed to the right as shown through the five-number summary and the histogram in Figure 44 and Figure 45.
 
-![Figure 44 Five-Number Summary of minimum_nights](Figure/Figure44.png)
-![Figure 45 Histogram of minimum_nights](Figure/Figure45.png)
+![Figure44_45](Figure/Figure44_45.png)
 
 - **maximum_nights**: The maximum number of nights for the listing ranges from 1 to 100,000 days. Most of the listings have a maximum less or equal to 1,125 days. Its distribution is highly skewed to the right as shown through the five- number summary and the histogram in Figure 46 and Figure 47.
 
-![Figure 46 Five-Number Summary of maximum_nights](Figure/Figure46.png)
-![Figure 47 Histogram of maximum_nights](Figure/Figure47.png)
+![Figure46_47](Figure/Figure46_47.png)
 
+- **minimum_minimum_nights**: The smallest minimum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 1,125 days. Most of the listings have a minimum less or equal 7 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 48 and Figure 49. There are 16,793 listings that have the same value of smallest minimum nights value from the calendar (looking 365 nights in the future) with their current minimum nights value.
 
+![Figure48_49](Figure/Figure48_49.png)
 
+- **maximum_minimum_nights**: The largest minimum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 1,125 days. Most of the listings have a minimum less or equal to 7 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 50 and Figure 51. There are 16,773 listings that have the same value of largest minimum_nights value from the calender (looking 365 nights in the future) with their current minimum_nights.
 
+![Figure50_51](Figure/Figure50_51.png)
+
+- **minimum_maximum_nights**: The smallest maximum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 2,147,483,647 days. Most of the listings have a maximum less or equal to 1,125 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 52 and Figure 53. There are 14801 listings that have the same value of smallest maximum nights value from the calendar (looking 365 nights in the future) with their current maximum nights value.
+
+![Figure52_53](Figure/Figure52_53.png)
+
+- **maximum_maximum_nights**: The largest maximum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 2,147,483,647 days. Most of the listings have a maximum less or equal to 1,125 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 54 and Figure 55. There are 14961 listings that have the same value of largest maximum nights value from the calendar (looking 365 nights in the future) with their current maximum nights value.
+
+![Figure54_55](Figure/Figure54_55.png)
+
+- **minimum_nights_avg_ntm**: The average minimum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 1,125 days. Most of the listings have a minimum less or equal to 7 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 56 and Figure 57.
+
+![Figure56_57](Figure/Figure56_57.png)
+
+- **maximum_nights_avg_ntm**: The average maximum nights of the listing (looking 365 nights in the future in calendar) ranges from 1 to 2,147,483,647 days. Most of the listings have a maximum less or equal to 1,125 days. Its distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 58 and Figure 59.
+
+![Figure58_59](Figure/Figure58_59.png)
+
+- **calendar_updated**: This attribute does not contain any information since this is an empty column.
+- **has_availability**: This attribute has two levels: t and f, corresponding to whether the listing has availability or not in the next 365 days. There are 17,004 listings with availability in the next 365 days based on calendar, and 70 listings not.
+- **availability_30**: The availability of the listing in the next 30 days ranges from 0 to 30 days. With a median of 29 days and a third quartile of 30 days, most of the listings have around 30 days of availability in the next 30 days. The five- number summary and the histogram of the attribute are shown below in Figure 60 and Figure 61.
+
+![Figure60_61](Figure/Figure60_61.png)
+
+- **availability_60**: The availability of the listing in the next 60 days ranges from 0 to 60 days. With a median of 59 days and a third quartile of 60 days, most of the listings have around 60 days of availability in the next 60 days. The five- number summary and the histogram of the attribute are shown below in Figure 62 and Figure 63.
+
+![Figure62_63](Figure/Figure62_63.png)
+
+- **availability_90**: The availability of the listing in the next 90 days ranges from 0 to 90 days. With a median of 89 days and a third quartile of 90 days, most of the listings have around 90 days of availability in the next 90 days. The five- number summary and the histogram of the attribute are shown below in Figure 64 and Figure 65.
+
+![Figure64_65](Figure/Figure64_65.png)
+
+- **availability_365**: The availability of the listing in the next 365 days ranges from 0 to 365 days. With a median of 328 days and a third quartile of 365 days, most of the listings have around 365 days of availability in the next 365 days, with few around 0 days, 100 days and 150 days. The five-number summary and the histogram of the attribute are shown below in Figure 66 and Figure 67.
+
+![Figure66_67](Figure/Figure66_67.png)
+
+- **calendar_last_scraped**: The calendar was last scraped on June 20 and June 21 of the year 2022. There are 14,753 listings that were scraped on June 20, 2022, and 2321 listings were scraped on June 21, 2022.
+- **number_of_reviews**: The number of reviews the listing has ranges from 0 to 1,119 reviews. Most of the listings have less than 10 reviews, but few can up have to 1,119 reviews based on the result from the five-number summary and the histogram of attribute shown in Figure 68 and Figure 69. The distribution is highly skewed to the right.
+
+![Figure68_69](Figure/Figure68_69.png)
+
+- **number_of_reviews_ltm**: The number of reviews the listing has in the last 12 months ranges from 0 to 112 reviews. Most of the listings have 0 reviews in the last year, but few can up have to 112 reviews based on the result from the five-number summary and the histogram of attribute shown in Figure 70 and Figure 71. The distribution is highly skewed to the right.
+
+![Figure70_71](Figure/Figure70_71.png)
+
+- **number_of_reviews_l30d**: The number of reviews the listing has in the last 30 days ranges from 0 to 23 reviews. Most of the listings have 0 reviews in the last 30 days, but few can up have to 23 reviews based on the result from the five-number summary and the histogram of attribute shown in Figure 72 and Figure 73. The distribution is highly skewed to the right.
+
+![Figure72_73](Figure/Figure72_73.png)
+
+- **first_review**: The date of the first review spans from February 09, 2011 to June 21, 2022. There are 10,012 listings with information on the first review’s date.
+- **last_review**: The date of the last review spans from December 15, 2012 to June 21, 2022. There are 10,012 listings with information on the last review’s date, and there are 1,873 listings with same first review and last review date.
+- **review_scores_rating**: The overall score rating of the listing by all reviews ranges from 0 to 5. From the five-number summary and the histogram of the attribute in Figure 74 and Figure 75, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure74_75](Figure/Figure74_75.png)
+
+- **review_scores_accuracy**: The accuracy score rating of the listing by all reviews ranges from 0 to 5. Only 9,786 listings out of the 10,012 listings that have reviews have review score for accuracy. From the five-number summary and the histogram of the attribute in Figure 76 and Figure 77, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure76_77](Figure/Figure76_77.png)
+
+- **review_scores_cleanliness**: The cleanliness score rating of the listing by all reviews ranges from 0 to 5. Only 9,786 listings out of the 10,012 listings that have reviews have review score for cleanliness. From the five-number summary and the histogram of the attribute in Figure 78 and Figure 79, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure78_79](Figure/Figure78_79.png)
+
+- **review_scores_checkin**: The check-in score rating of the listing by all reviews ranges from 0 to 5. Only 9,780 listings out of the 10,012 listings that have reviews have review score for check-in. From the five-number summary and the histogram of the attribute in Figure 80 and Figure 81, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure80_81](Figure/Figure80_81.png)
+
+- **review_scores_communication**: The communication score rating of the listing by all reviews ranges from 0 to 5. Only 9,785 listings out of the 10,012 listings that have reviews have review score for communication. From the five- number summary and the histogram of the attribute in Figure 82 and Figure 83, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure82_83](Figure/Figure82_83.png)
+
+- **review_scores_location**: The location score rating of the listing by all reviews ranges from 0 to 5. Only 9,779 listings out of the 10,012 listings that have reviews have review score for location. From the five-number summary and the histogram of the attribute in Figure 84 and Figure 85, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure84_85](Figure/Figure84_85.png)
+
+- **review_scores_value**: The value score rating of the listing by all reviews ranges from 0 to 5. Only 9,778 listings out of the 10,012 listings that have reviews have review score for value. From the five-number summary and the histogram of the attribute in Figure 86 and Figure 87, most of the listings have score of 4 and above, and the distribution is highly skewed to the left.
+
+![Figure86_87](Figure/Figure86_87.png)
+
+- **license**: This attribute contains no information since it is an empty column.
+- **instant_bookable**: There are two levels: t and f. 11,376 listings are instant bookable while 5,698 listings are not.
+- **calculated_host_listings_count**: The number of listings the host has in the current scrape ranges from 1 to 195, which is different from host_listings_count. Most of the hosts have less or equal to 11 listings, but some have up to 195 listings. The distribution is highly skewed to the right as shown by the five-number summary and the histogram in Figure 88 and Figure 89.
+
+![Figure88_89](Figure/Figure88_89.png)
+
+- **calculated_host_listings_count_entire_homes**: The number of entire home/apt listings the host has in the current scrape ranges from 0 to 195. Most of the hosts have less or equal to 5 listings of entire home/apt, but some have up to 195 listings. The distribution is highly skewed to the right as shown by the five-number summary and the histogram in Figure 90 and Figure 91.
+
+![Figure90_91](Figure/Figure90_91.png)
+
+- **calculated_host_listings_count_private_rooms**: The number of private rooms listings the host has in the current scrape ranges from 0 to 195. Most of the hosts have less or equal to 2 listings of private rooms, but some have up to 195 listings. The distribution is highly skewed to the right as shown by the five- number summary and the histogram in Figure 92 and Figure 93.
+
+![Figure92_93](Figure/Figure92_93.png)
+
+- **calculated_host_listings_count_shared_rooms**: The number of shared rooms listings the host has in the current scrape ranges from 0 to 62. Most of the hosts have less or equal to 0 listing of shared rooms, but some have up to 62 listings. The distribution is highly skewed to the right as shown by the five- number summary and the histogram in Figure 94 and Figure 95.
+
+![Figure94_95](Figure/Figure94_95.png)
+
+- **reviews_per_month**: The attribute ranges from 0.01 to 19.42. Most of the hosts have less than 1 review per month. The distribution is highly skewed to the right as shown in the five-number summary and the histogram in Figure 96 and Figure 97.
+
+![Figure96_97](Figure/Figure96_97.png)
+
+The attribute constraints, potential primary keys and foreign keys are as follows:
+- primary key(id)
+- listing_url not null
+- host_id not null (in future separation to host table, host_id is the primary key)
+- host_url not null
+- check (host_is_superhost in ('t', 'f'))
+- check (host_listings_count >= 0)
+- check (host_total_listings_count >= 0)
+- check (host_has_profile_pic in ('t', 'f'))
+- check (host_identity_verified in ('t', 'f'))
+- check (latitude >= 0)
+- check (longitude >= 0)
+- check (room_type in ('Entire home/apt', 'Private room', 'Hotel room', 'Shared room'))
+- check (accommodates >= 0)
+- check (bedrooms >= 1)
+- check (beds >= 1)
+- check (price >= 0)
+- check (minimum_nights >= 1)
+- check (maximum_nights >= 1)
+- check (minimum_minimum_nights >= 1)
+- check (maximum_minimum_nights >= 1)
+- check (minimum_maximum_nights >= 1)
+- check (maximum_maximum_nights >= 1)
+- check (minimum_nights_avg_ntm >= 1)
+- check (maximum_nights_avg_ntm >= 1)
+- check (has_availability in ('t', 'f'))
+- check (availability_30 >= 0)
+- check (availability_60 >= 0)
+- check (availability_90 >= 0)
+- check (availability_365 >= 0)
+- check (number_of_reviews >= 0)
+- check (number_of_reviews_ltm >= 0)
+- check (number_of_reviews_l30d >= 0)
+- check (review_scores_rating >= 0)
+- check (review_scores_accuracy >= 0)
+- check (review_scores_cleanliness >= 0)
+- check (review_scores_checkin >= 0)
+- check (review_scores_communication >= 0)
+- check (review_scores_location >= 0)
+- check (review_scores_value >= 0)
+- check (instant_bookable in ('t', 'f'))
+- check (calculated_host_listings_count >= 1)
+- check (calculated_host_listings_count_entire_homes >= 0)
+- check (calculated_host_listings_count_private_rooms >= 0)
+- check (calculated_host_listings_count_shared_rooms >= 0)
+- check (reviews_per_month >= 0)
 
 ---
 
