@@ -802,11 +802,9 @@ Other alternative for data deployment would be on non-relational database. For m
 ### 4.6.1. Comparison between MongoDB and HBase
 In order to decide which non-relational database, MongoDB characteristics are compared against HBase characteristics in this subsection. For further classification, NoSQL can be divided into several classifications based on the way of storage:
 
-1. Document Database
-The notable representatives for document database storage are MongoDB and CouchDB. In terms of features, document database enforces document as the basic unit of processing information. A document can be long, complex, and unstructured, similar to a word processing document. A document is equivalent to a record in a relational database.
+1. Document Database: The notable representatives for document database storage are MongoDB and CouchDB. In terms of features, document database enforces document as the basic unit of processing information. A document can be long, complex, and unstructured, similar to a word processing document. A document is equivalent to a record in a relational database.
 
-2. Column Store Database
-The notable representatives for column store database storage are HBase and Cassandra. In terms of features, column-related storage database provides architecture which is suitable for processing large batches of data.
+2. Column Store Database: The notable representatives for column store database storage are HBase and Cassandra. In terms of features, column-related storage database provides architecture which is suitable for processing large batches of data.
 
 We compare two representative NoSQL Databases: HBase and MongoDB from several dimensions like storage structure, environment construction, performance, etc. The details of comparison results can be seen in the two tables below.
 
@@ -964,6 +962,77 @@ In this section, 20 natural language (NL) queries are listed based on the requir
 ---
 
 ## 5.2. MongoDB Queries
+
+1. NL Query: Most popular host
+    - Ideas: Since MongoDB cannot directly use ‘max’ in find query, we just sort using host_total_listings_count in descending order and return the first item of the return.
+
+![Figure118_1a](Figure/Figure118_1a.png)
+
+2. NL Query: Most popular room (i.e.listings)
+    - Ideas: Use number of reviews to represent the level of “population”. Sort them first and project some important features of the room, such as id,name,host_id
+
+![Figure118_1b](Figure/Figure118_1b.png)
+
+3. NL Query: Longest room renting
+    - Ideas: We choose the attribute ‘maximum_nights’ to reflect the time of room renting.
+
+![Figure118_1c](Figure/Figure118_1c.png)
+
+4. NL Query: Visitor’s name giving most reviews
+    - Ideas: Do this queries with two steps: 1. In table reviews, group by reviewer_id and find the reviewer_id with most reviews. 2. Find the name of this reviewer_id in table review.
+    - Total execution time: 700+96=796ms
+
+![Figure118_1d](Figure/Figure118_1d.png)
+
+5. NL Query: Most expensive lodging
+
+![Figure118_1e](Figure/Figure118_1e.png)
+
+6. NL Query: Best recommended lodgings for a family of 4 (referring to review score)
+    - Ideas: First, this lodgings need to have ‘accommodates’ larger or equal to 4, then try to find the ‘best recommended’ one: sort by ‘review_scores_value’ first, with the same review_scores_value, sort by review_scores_rating, and consider every content of the review.
+
+![Figure118_1f](Figure/Figure118_1f.png)
+
+7. NL Query: Top 10 most expensive lodgings which are equipped with Gym
+    - Ideas: ‘amenties’ is a string attribute, for lodgings equipped with Gym, just find lodgings ‘amenities’ contains “Gym”
+
+![Figure118_1g](Figure/Figure118_1g.png)
+
+8. NL Query: Top 10 worst lodgings to be avoided by tourists
+    - Ideas: The similar strategy. But it is worth mentioning that for there are many rooms with number_of_review equal to 0,1,2,3, and they get 0 score. Since the number of reviews is too small, the review scores are not convincing. So we add another condition requires that the number of reviews must larger or equal to 10. 
+
+![Figure118_1h](Figure/Figure118_1h.png)
+
+9. NL Query: Number of verified hotel near Bangkok Neighbourhood
+
+![Figure118_1i](Figure/Figure118_1i.png)
+
+10. NL Query: Lodging with highest total capacity in Bangkok
+    - Execution time: 2908ms
+    - Total execution time: 1430+2908 = 4338ms
+    - Step 1: It consists of two tables----listings and location. First, find listings with ‘Bangkok’ as neighbourhood and merge them into new table named 'Bangkok'.
+
+![Figure118_1j0](Figure/Figure118_1j0.png)
+    - Step 2: Merge table listings and Bangkok on latitude. If the listing doesn’t have Bangkok as neighbourhood, the new attribute Bangkok will be null. So we need to match items with Bangkok not equal to null. Then, sort by accommodates.
+
+```
+db.listings.aggregate( [{$lookup: {from: 'Bangkok', localField: 'latitude', foreignField: 'latitude', as: 'Bangkok'}}, {$project: { _id:0, name:1, accommodates:1, Bangkok:1 }}, {$match: { "Bangkok": { $ne: [] } }}, {$sort: { accommodates: -1 }}])
+```
+    - Final output:
+
+![Figure118_1j1](Figure/Figure118_1j1.png)
+
+11. NL Query: Most popular lodging locations
+    - Ideas: The most “popular” place has highest average of review_scores_value in listings, group them by the location name in “host_location”. Merge the needed entries using host_id in both listing.csv and host.csv. Then sort in descending order to find the most popular lodging location.
+    - Execution Time: 506755 ms
+    - MongoDB Query:
+
+![Figure118_1k0](Figure/Figure118_1k0.png)
+    - Final output:
+
+![Figure118_1k1](Figure/Figure118_1k1.png)
+
+
 
 ---
 
