@@ -1018,7 +1018,8 @@ In this section, 20 natural language (NL) queries are listed based on the requir
 ```
 db.listings.aggregate( [{$lookup: {from: 'Bangkok', localField: 'latitude', foreignField: 'latitude', as: 'Bangkok'}}, {$project: { _id:0, name:1, accommodates:1, Bangkok:1 }}, {$match: { "Bangkok": { $ne: [] } }}, {$sort: { accommodates: -1 }}])
 ```
-    - Final output:
+
+Final output:
 
 ![Figure118_1j1](Figure/Figure118_1j1.png)
 
@@ -1028,11 +1029,66 @@ db.listings.aggregate( [{$lookup: {from: 'Bangkok', localField: 'latitude', fore
     - MongoDB Query:
 
 ![Figure118_1k0](Figure/Figure118_1k0.png)
-    - Final output:
+
+Final output:
 
 ![Figure118_1k1](Figure/Figure118_1k1.png)
 
+12. NL Query: Host with highest monthly revenue
+    - Ideas: Use date in calendar to retrieve month and year. Sum all the adjusted_price for same listing_id, month, and year. Use listing_id to find the host_id in listing. Group the revenue according to host_id. Find the information of host_id after sorting.
+    - Execution time: 7ms
+    - MongoDB Query:
 
+![Figure118_1l0](Figure/Figure118_1l0.png)
+
+Final output:
+
+![Figure118_1l1](Figure/Figure118_1l1.png)
+
+14. NL Query: Most popular season
+    - Ideas: Use transaction.csv, first calculate the number of booking in the group by month, then based on month conclude the most popular season.
+    - Execution Time: 354 ms
+    - MongoDB Query:
+
+![Figure118_1n0](Figure/Figure118_1n0.png)
+
+Final output:
+
+![Figure118_1n1](Figure/Figure118_1n1.png)
+
+15. NL Query: Top 10 lodging with amenities listed
+    - Ideas: In listings.csv, find the lodging with the most number of amenities, by using split: ","
+    - Execution Time: 166 ms
+    - MongoDB Query:
+
+![Figure118_1o0](Figure/Figure118_1o0.png)
+
+Final output:
+
+![Figure118_1o1](Figure/Figure118_1o1.png)
+
+16. NL Query: Oldest listed condominium that has Gym and Pool facilities
+    - Idea Find all the listings with gym and pool amenities, and then check the host_since to get the oldest one.
+    - Execution Time: 53436 ms
+    - MongoDB Query:
+
+![Figure118_1p0](Figure/Figure118_1p0.png)
+
+Final output:
+
+![Figure118_1p1](Figure/Figure118_1p1.png)
+
+17. NL Query: Top 10 lodgings with highest average price increase during Christmas and New Year
+    - Ideas: Find the Christmas and New Year's transactions, and then calculated the highest average price increase.
+    - Observation: The New Year's average price increase is higher at about 30%
+    - Execution Time: 103805 ms
+    - MongoDB Query:
+
+![Figure118_1q0](Figure/Figure118_1q0.png)
+
+Final output:
+
+![Figure118_1q1](Figure/Figure118_1q1.png)
 
 ---
 
