@@ -1,5 +1,5 @@
 # 1. Introduction
-Throughout the course of this project, I gained valuable insights on database management system and retrieval languages. In this opportunity, our group embarks on journey to implement a project to design database based on AirBnB dataset provided.
+Throughout the course of this project, I gained valuable insights on database management system and retrieval languages. In this opportunity, I embarks on journey to implement a project to design database based on AirBnB dataset provided.
 
 ---
 
@@ -549,37 +549,88 @@ The attribute constraints, potential primary keys and foreign keys are as follow
 ---
 
 # 3. Data Processing
-
+Upon performing in-depth data analysis in previous section, AirBnB dataset undergoes processing stage to clean unexpected data like duplicated values, inconsistent number of attributes, and presence of multiple non-English languages.
 
 ---
 
 ## 3.1. Processing Strategy
+There are few strategies involved for cleaning the dataset which will be discussed in this section:
+- When a particular record is null (i.e. missing), it will be replaced with value which logically making sense and following attribute data type discussed in data analysis in previous section. This is done to ensure there is no null entries on all dataset.
+- Records with duplicated values signify that the table is not in BCNF form and therefore schema reduction will be performed and discussed elaborately in next section for data storing.
+- For attributes which are of “free-text” in nature (e.g. ‘comments’ attribute in reviews table, ‘description’ attribute in listings table, etc), all characters that does not conform to ASCII and UTF-8 encoding will be deprecated and replaced with whitespaces. This is done to ensure data importability to database management systems with strict encoding type like MySQL. For simplification, same approach is implemented for data deployment at MongoDB.
+- The presence of multiple languages in the dataset imposes difficulty for data deployment at traditional relational database management system. Therefore, non-English characters, emoticons, and any other special characters belonging to extended Unicode character set would also be replaced with whitespaces.
+- Summary files such as listings_summary.csv and reviews_summary.csv only capture table snapshot of key lingtings.csv and reviews.csv files with exact same number of rows but reduced number of columns. This is why these summary files will be ignored for this project.
 
+Based on aforementioned strategies, I will discuss my exact implementation on all attributes which are altered during data processing for each individual tables in next subsequent subsection under current Section 3.
 
 ---
 
 ## 3.2. Calendar Relation
+First, I need to check if there are rows containing null values in calendar.csv through execution of below code chunk. The result prints the attribute name, data type, and the number of null records respectively. From the result below, there are 2 records under ‘minimum_nights’ and ‘maximum_nights’ columns with null values. They will be backfilled with integer 1. The output of this processed calendar would be named as 1_calendar.csv.
 
+![Figure98](Figure/Figure98.png)
+
+Next processing step for calendar relation would be to convert price attribute under calendar relation from initially string data type to float data type. There are two generic cases under price attribute here such as $870.00 and “$100,000.00” which would be converted into 870.00 and 100000.00 by getting rid of dollar sign ($), double quotation sign (“ “), and comma sign for those prices greater than 999.99 dollars. If this comma sign is not removed, they will introduce a new column in calendar relation once dollar sign and double quotation sign are removed which is not desired. See below code snippet which generates 2_calendar.csv from input 1_calendar.csv file earlier.
+
+![Figure99](Figure/Figure99.png)
 
 ---
 
 ## 3.3. Transaction Relation
+Transaction relation is derived from processed calendar.csv discussed previously. If I carefully take a look the records in the calendar dataset, I can see that under each listing_id, there will be a range of dates and availability status with ‘f’ indicating that the place is occupied and ‘t’ indicating that the place is available for rent.
+The idea to derive transaction relation is to leverage only on two attributes from calendar, namely, dates and available. For each listing_id, I would be keeping track of checkin date and checkout date. Checkin date is defined as the date when available column turns from consecutive status ‘t’ to ‘f’, while checkout date is defined as the date when available column turns from consecutive status ‘f’ to ‘t’. Occupancy period can then be calculated by taking difference between checkin date and checkout date. If checkin date and checkout date is the same, I will assume that occupancy period is 1 day.
+From above model, I proceeded to do text processing using code snippet below to read 1_calendar.csv and to generate two interim output files called 1_checkin.csv and 1_checkout.csv. Both these interim files have same set of attributes as calendar relation. The only exception is that attribute ‘dates’ in checkin.csv reflects checkin date while ‘dates’ in checkout.csv reflects checkout date.
 
+![Figura100](Figure/Figure100.png)
+
+
+Next step would be to read said 1_checkin.csv and 1_checkout.csv into a pandas dataframe and calculate a new attribute occupancy_period which equals to ‘dates’ from 1_checkout.csv subtracted by ‘dates’ from 1_checkin.csv. Based on BCNF schema reduction discussed in section 4 for data storing, it is concluded that transaction relation can be reduced to only consists of attributes listing_id, checkin_date, and occupancy_period so that it is in BCNF form. The final transaction file is saved as 2_transaction.csv. Code snippet below illustrates steps taken to generate 2_transaction.csv based on 1_checkin.csv and 1_checkout.csv
+
+![Figura101](Figure/Figure101.png)
 
 ---
 
 ## 3.4. Reviews and Reviewer Relations
+On reviews relation, first step is the same which is to check if there is any null values using check_null() function described in Figure 98 earlier. I can see that there are 2 records under attribute reviewer_name which are missing and there are 24 missing entries under attribute comments. For these 26 missing entries, they will be backfilled with single whitespace since original data type is string.
 
+![Figura102](Figure/Figure102.png)
+
+Next step would be to replace every single non-ASCII characters in attributes reviewer_name and comments with whitespaces by defining a function called clean_nonasscii().
+
+![Figura103](Figure/Figure103.png)
+
+Based on BCNF schema reduction discussed in section 4, there are duplicated records on reviewer_name and therefore a new relation called reviewer will be created which consists of only two attributes, namely, reviewer_id and reviewer_name. Final list of attributes in reviews relation would be id, listing_id, reviewer_id, date, and comments. This last step of processing for reviews and reviewer relation can be seen in below code snippet. The output files are 2_reviews.csv and 2_reviewer.csv
+
+![Figura104](Figure/Figure104.png)
 
 ---
 
 ## 3.5. Listings, Scrape, Host, Host_pic, and Location Relations
+Let’s start the processing discussion in this subsection with listings relation first. Upon executing check_null() function from Figure 98 earlier, a list of attributes with null records are generated. Each column has different approach to backfill missing entries. Detailed list can be seen in Figure 105 below.
+• For most attributes having string data type, missing entries are backfilled with single whitespace. The only exception would be URL-related attribute being backfilled with string “None”, host_response_time attribute being backfilled with 72 (to indicate more than 3-day response, 72 hours), host_has_profile_pic & host_identity_verify being backfilled with ‘f’, and bathrooms_text being backfilled with string “1 bathroom”.
+• For attributes having date data type, missing entries would be backfilled with date 2008-08-11 which is the launch date of AirBnB platform application to public. Affected attributes are host_since, first_review, and last_review.
+• For attributes having float or int data type, missing entries are handled in case- by-case basis. Attributes related to rate, review scores, licence, calendar_updated, and neighbourhood_group_cleansed are backfilled with 0. Attributes related to count parameters such as host_listings_count, host_total_listings_count, bedrooms, and beds are backfilled with 1 since each listing must logically have at least 1 on these attributes.
 
+![Figura105](Figure/Figure105.png)
+
+In Figure 106 below, it provides detailed implementation on null entries backfilling based on action description in Figure 105. On top of that, there are several value update to original non-null records on few columns.
+• Attribute host_response_time applies update_responsetime() function to change the value in such a way that string “within an hour”, “within a day”, and “within a few hours” will be converted to integer 1, 24, and 3 respectively. This is done to ease query pertaining host responsiveness in the later part for query implementation.
+• Attribute host_response_rate and host_acceptance_rate apply update_responserate() function to remove percentage sign (%) for ease of query execution.
+• Attribute bathrooms applies derive_bathroom() function to fetch the number of bathrooms denoted in text-form in attribute bathrooms_text which is of string data type.
+• Attribute price applies update_price() function to remove special characters in the value so that the price can be in float data type.
+
+![Figura106](Figure/Figure106.png)
+
+Last step of listings relation processing is basically to refer back to BCNF schema reduction discussed in section 4 where multiple intrinsic functional dependencies residing in listing relation are separated out as standalone and separate relations. In this case, there are 4 relations extracted out form listings relation which are scrape relation, location relation, host relation, and host_pic relation. Other than candidate keys of said 4 relations, attributes belonging to these 4 relations would be dropped from original listings relation. Further, based on respective candidate keys, these 4 relations will drop duplicated record entries so as to make the dataset unique. The output of below Figure 107 would be 2_listings.csv, 2_scrape.csv, 2_location.csv, 2_host.csv, and 2_host_pic.csv.
+
+![Figura107](Figure/Figure107.png)
 
 ---
 
 ## 3.6. Final Unicode Characters Processing
+At this point, I have in total of 9 relation files which are 2_calendar.csv, 2_transaction.csv, 2_reviews.csv, 2_reviewer.csv, 2_listings.csv, 2_host.csv, 2_host_pic.csv, 2_scrape.csv, and 2_location.csv. The prefix “2_” in the file names indicate that they are final version of processed files. Before deploying these CSV files into relational database and non-relational database, last processing step is to convert all remaining non-ASCII characters into whitespaces as can be seen in below code snippet. All the files would be overwritten to same file names respectively based on the output of said last processing step.
 
+![Figura108](Figure/Figure108.png)
 
 ---
 
